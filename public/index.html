@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpendSmart - Track Your Money</title>
+    <link rel="stylesheet" href="style.css">
+
+    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,301,400,401,500,501,700,701,900,901,1,2&f[]=supreme@100,101,200,201,300,301,400,401,500,501,700,701,800,801,1,2&f[]=chillax@200,300,400,500,600,700,1&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- ========== HEADER SECTION ========== -->
+        <header class="header">
+            <div class="logo-container">
+                <!-- Placeholder square for logo -->
+                <div class="logo-placeholder"></div>
+                <img src="images/placeholderS.png" alt="SpendSmart Logo" class="logo-image">
+                <h1>SpendSmart</h1>
+            </div>
+            
+            <!-- Month navigation controls -->
+            <div class="month-display">
+                <button class="month-nav" id="prevMonth">←</button>
+                <span id="currentMonth">March 2026</span>
+                <button class="month-nav" id="nextMonth">→</button>
+            </div>
+        </header>
+
+        <!-- ========== MAIN CONTENT ========== -->
+        <main class="main-content">
+            
+            <!-- ===== BUDGET CARD ===== -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Monthly Budget</h2>
+                    <span class="budget-amount" id="budgetAmount">2,500</span>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar budget-bar" id="budgetBar" style="width: 60%"></div>
+                </div>
+
+                <div class="stats-row">
+                    <span id="budgetLeft">1,000 left</span>
+                    <span id="budgetPercentage">40% remaining</span>
+                </div>
+            </div>
+
+            <!-- ===== SPENT CARD ===== -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Spent This Month</h2>
+                    <span class="spent-amount" id="spentAmount">1,500</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar spent-bar" id="spentBar" style="width: 60%"></div>
+                </div>
+                <div class="stats-row">
+                    <span id="spentPercentage">60% of budget used</span>
+                </div>
+            </div>
+
+            <!-- ===== ADD EXPENSE FORM ===== -->
+            <div class="card">
+                <h2>Add New Expense</h2>
+                <form id="expenseForm" class="expense-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="amount">Amount</label>
+                            <input type="number" id="amount" step="5.00" min="0" placeholder="0.00" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date" required>
+                        </div>
+                    </div>
+
+                    <!-- Category and Subcategory -->
+                    <div class="form-row">
+                        <!-- Category dropdown -->
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" required>
+                                <option value="" disabled selected>Select category</option>
+                                <option value="Food">🍔 Food</option>
+                                <option value="Transport">🚗 Transport</option>
+                                <option value="Shopping">🛒 Shopping</option>
+                                <option value="Entertainment">🎬 Entertainment</option>
+                                <option value="Bills">💡 Bills</option>
+                                <option value="Other">📦 Other</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Subcategory dropdown -->
+                        <div class="form-group">
+                            <label for="subcategory">Subcategory</label>
+                            <select id="subcategory" disabled>
+                                <option value="" disabled selected>Select category first</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-add">
+                        Add Expense
+                    </button>
+                </form>
+            </div>
+
+            <!-- ===== EXPENSES LIST ===== -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Expenses This Month</h2>
+                    <span class="expense-count" id="expenseCount">0 items</span>
+                </div>
+                
+                <div class="expenses-list" id="expensesList">
+                    <div class="empty-state">
+                        <p>No expenses yet. Add your first expense above!</p>
+                    </div>
+                </div>
+                
+                <div class="expenses-total">
+                    <strong>Total:</strong>
+                    <span id="monthlyTotal">0.00</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
