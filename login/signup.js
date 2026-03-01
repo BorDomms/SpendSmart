@@ -1,5 +1,5 @@
 // public/login/signup.js
-import { supabase } from '../supabase.js'
+import { supabase } from '/supabase.js'
 
 // ===== TOGGLE PASSWORD VISIBILITY =====
 document.querySelectorAll('.toggle-password').forEach(button => {

@@ -2,7 +2,7 @@
 console.log('🚀 Login.js started');
 
 // Regular import for supabase
-import { supabase } from '../supabase.js';
+import { supabase } from '/supabase.js';
 
 // ===== TOGGLE PASSWORD VISIBILITY =====
 document.getElementById('togglePassword')?.addEventListener('click', function() {
@@ -48,7 +48,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async function(
         
         if (session) {
             console.log('Session verified, redirecting...');
-            window.location.href = '../main/main.html';
+            window.location.href = '/main/main.html';
         } else {
             throw new Error('Session not established');
         }

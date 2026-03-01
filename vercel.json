@@ -1,38 +1,8 @@
 {
-  "builds": [
-    {
-      "src": "main/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "login/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "images/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.js",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/main/main.html"
-    },
-    {
-      "src": "/login",
-      "dest": "/login/login.html"
-    },
-    {
-      "src": "/signup",
-      "dest": "/login/signup.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
+  "rewrites": [
+    { "source": "/", "destination": "/login/login.html" },
+    { "source": "/main", "destination": "/main/main.html" },
+    { "source": "/login", "destination": "/login/login.html" },
+    { "source": "/signup", "destination": "/login/signup.html" }
   ]
 }

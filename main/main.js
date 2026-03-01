@@ -1,5 +1,5 @@
 // ===== IMPORT SUPABASE =====
-import { supabase } from '../supabase.js'
+import { supabase } from '/supabase.js'
 
 // ===== CHECK SESSION IMMEDIATELY =====
 console.log('Main page loading...');
@@ -8,12 +8,12 @@ const { data: { session }, error } = await supabase.auth.getSession();
 
 if (error) {
     console.error('Session error:', error);
-    window.location.href = '../login/login.html';
+    window.location.href = '/login/login.html';
 }
 
 if (!session) {
     console.log('No session found, redirecting to login');
-    window.location.href = '../login/login.html';
+    window.location.href = '/login/login.html';
 } else {
     console.log('Session found for:', session.user.email);
     
@@ -286,7 +286,7 @@ async function editBudget() {
             
             if (!session) {
                 alert('Session expired. Please log in again.');
-                window.location.href = '../login/login.html';
+                window.location.href = '/login/login.html';
                 return;
             }
             
@@ -388,7 +388,7 @@ async function addExpense(event) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
         alert('Please log in again');
-        window.location.href = '../login/login.html';
+        window.location.href = '/login/login.html';
         return;
     }
     
@@ -439,7 +439,7 @@ async function deleteExpense(id) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
         alert('Please log in again');
-        window.location.href = '../login/login.html';
+        window.location.href = '/login/login.html';
         return;
     }
     
@@ -468,7 +468,7 @@ function setupLogoutButton() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
             await supabase.auth.signOut();
-            window.location.href = '../login/login.html';
+            window.location.href = '/login/login.html';
         });
     }
 }
