@@ -4,26 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SpendSmart - Track Your Money</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="main.css">
 
     <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,301,400,401,500,501,700,701,900,901,1,2&f[]=supreme@100,101,200,201,300,301,400,401,500,501,700,701,800,801,1,2&f[]=chillax@200,300,400,500,600,700,1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <!-- ===== NAVIGATION BAR ===== -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <button id="logoutBtn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+            <div class="nav-right">
+                <!-- Empty for now -->
+            </div>
+        </div>
+    </nav>
+
     <div class="app">
         <!-- ========== HEADER SECTION ========== -->
         <header class="header">
             <div class="logo-container">
                 <!-- Placeholder square for logo -->
                 <div class="logo-placeholder"></div>
-                <img src="images/placeholderS.png" alt="SpendSmart Logo" class="logo-image">
+                <img src="/images/placeholderS.png" alt="SpendSmart Logo" class="logo-image">
                 <h1>SpendSmart</h1>
             </div>
             
             <!-- Month navigation controls -->
             <div class="month-display">
-                <button class="month-nav" id="prevMonth">←</button>
+                <button class="month-nav" id="prevMonth">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
                 <span id="currentMonth">March 2026</span>
-                <button class="month-nav" id="nextMonth">→</button>
+                <button class="month-nav" id="nextMonth">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
             </div>
         </header>
 
@@ -34,7 +53,7 @@
             <div class="card">
                 <div class="card-header">
                     <h2>Monthly Budget</h2>
-                    <span class="budget-amount" id="budgetAmount">2,500</span>
+                    <span class="budget-amount" id="budgetAmount">0</span>
                 </div>
 
                 <div class="progress-container">
@@ -42,7 +61,7 @@
                 </div>
 
                 <div class="stats-row">
-                    <span id="budgetLeft">1,000 left</span>
+                    <span id="budgetLeft">0 left</span>
                     <span id="budgetPercentage">40% remaining</span>
                 </div>
             </div>
@@ -68,7 +87,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="amount">Amount</label>
-                            <input type="number" id="amount" step="5.00" min="0" placeholder="0.00" required>
+                            <input type="number" id="amount" step="any" min="0" placeholder="0.00" required>
                         </div>
                         
                         <div class="form-group">
@@ -102,6 +121,22 @@
                         </div>
                     </div>
 
+                    <!-- ===== PAYMENT METHOD ROW ===== -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="paymentMethod">Payment Method</label>
+                            <select id="paymentMethod" required>
+                                <option value="" disabled selected>Select payment method</option>
+                                <option value="Cash">💵 Cash</option>
+                                <option value="Credit Card">💳 Credit Card</option>
+                                <option value="Debit Card">💳 Debit Card</option>
+                                <option value="Bank Transfer">🏦 Bank Transfer</option>
+                                <option value="E-Wallet">📱 E-Wallet</option>
+                                <option value="Other">📦 Other</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn-add">
                         Add Expense
                     </button>
@@ -129,6 +164,6 @@
         </main>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>

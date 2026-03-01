@@ -14,10 +14,13 @@ font-family: 'Chillax', sans-serif;
 
 /* ===== BODY STYLES ===== */
 body {
-    background: #dad7cd;
+    background: #212529;
     min-height: 100vh;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    transition: background 0.3s ease;
 }
 
 /* ===== MAIN APP CONTAINER ===== */
@@ -54,7 +57,7 @@ body {
 .header h1 {
     font-family: 'Chillax', sans-serif;
     font-weight: 600;
-    color: black;
+    color: white;
     font-size: 28px;
 }
 
@@ -63,31 +66,109 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
-    background: white;
+    background: #282d31;
     padding: 8px 15px;
     border-radius: 50px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    min-width: 200px; /* Fixed minimum width */
+    justify-content: center;
 }
 
 /* Month navigation buttons */
 .month-nav {
     background: none;
     border: none;
-    font-size: 18px;
+    font-size: 16px;
     cursor: pointer;
-    color: #667eea;
+    color: #0466c8;
     font-weight: bold;
-    padding: 5px 10px;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; /* Fixed width for buttons */
 }
 
 .month-nav:hover {
-    background: #f0f2f5;
-    border-radius: 5px;
+    color: #4361ee;
+    transform: scale(1.1);
+}
+
+.month-nav i {
+    font-size: 16px;
+}
+
+/* Current month text - fixed width */
+#currentMonth {
+    min-width: 140px; /* Fixed width for month text */
+    text-align: center;
+    font-weight: 500;
+    color: #f8f9fa;
+}
+
+/* ===== NAVIGATION BAR ===== */
+.top-nav {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    background: #343a40;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    padding: 10px 0;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 60px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+}
+
+/* ===== LOGOUT BUTTON ===== */
+.logout-btn {
+    background: #c53030;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    height: 40px;
+}
+
+.logout-btn:hover {
+    background: #f56565;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 101, 101, 0.3);
+}
+
+.logout-btn i {
+    font-size: 14px;
 }
 
 /* ===== CARD STYLES ===== */
 .card {
-    background: white;
+    background: #282d31;
     border-radius: 15px;
     padding: 20px;
     margin-bottom: 20px;
@@ -106,121 +187,29 @@ body {
     font-family: 'Supreme', sans-serif;
     font-weight: 900;
     font-size: 18px;
-    color: #3e363f;
+    color: #f8f9fa;
 }
 
-/* ===== LOCK ICON STYLES ===== */
-/* Locked */
-.lock {
-  width: 14px;
-  height: 12px;
-  margin-top: 6px;
-  border: 2px solid #edb458;
-  border-radius: 3px;
-  position: relative;
-  cursor: pointer;
-  transition: all 0.1s ease-in-out;
-}
-
-.lock:after {
-  content: "";
-  display: block;
-  background: #edb458;
-  width: 2px;
-  height: 4px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin: -2px 0 0 -1px;
-  transition: all 0.1s ease-in-out;
-}
-
-.lock:before {
-  content: "";
-  display: block;
-  width: 6px;
-  height: 6px;
-  bottom: 100%;
-  position: absolute;
-  left: 50%;
-  margin-left: -5px;
-  border: 2px solid #edb458;
-  border-top-right-radius: 50%;
-  border-top-left-radius: 50%;
-  border-bottom: 0;
-  transition: all 0.1s ease-in-out;
-}
-
-/* Locked Hover */
-.lock:hover:before {
-  height: 7px;
-}
-
-/* Unlocked */
-.lock.unlocked {
-  transform: rotate(8deg);
-}
-
-.lock.unlocked:before {
-  bottom: 120%;
-  left: 38%;
-  margin-left: -7px;
-  transform: rotate(-40deg);
-}
-
-.lock.unlocked,
-.lock.unlocked:before {
-  border-color: #ff5153;
-}
-
-.lock.unlocked:after {
-  background: #ff5153;
-}
-
-/* Unlocked Hover */
-.lock.unlocked:hover {
-  transform: rotate(4deg);
-}
-
-.lock.unlocked:hover:before {
-  height: 6px;
-  left: 45%;
-  bottom: 115%;
-  transform: rotate(-30deg);
-}
-
-/* ===== BUDGET AMOUNT STYLES ===== */
-.budget-amount {
-    font-size: 20px;
-    font-weight: bold;
-    color: #6a994e;
-    transition: all 0.2s ease;
-}
-
-/* Editable budget amount (when unlocked) */
-.budget-amount.editable {
-    text-decoration: underline;
-    text-decoration-style: dashed;
-    text-decoration-color: #6a994e;
-    text-underline-offset: 4px;
+/* ===== LOCK ICON STYLES (Font Awesome) ===== */
+.lock-icon {
+    font-size: 18px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    color: #0466c8;
 }
 
-/* Budget input for editing */
-.budget-input {
-    font-size: 11.5px;
-    font-weight: bold;
-    color: #6a994e;
-    border: 2px solid #6a994e;
-    border-radius: 8px;
-    padding: 4px 8px;
-    width: 120px;
-    outline: none;
+.lock-icon.unlocked {
+    color: #c53030;
 }
 
-.budget-input:focus {
-    border-color: #31572c;
-    box-shadow: 0 0 0 2px rgba(106, 153, 78, 0.2);
+.lock-icon:hover {
+    color: #4361ee;
+    transform: scale(1.2);
+}
+
+.lock-icon.unlocked:hover {
+    color: #ff5153;
+    transform: scale(1.2);
 }
 
 /* Lock container in budget card */
@@ -230,11 +219,45 @@ body {
     gap: 10px;
 }
 
+/* ===== BUDGET AMOUNT STYLES ===== */
+.budget-amount {
+    font-size: 20px;
+    font-weight: bold;
+    color: #9d4edd;
+    transition: all 0.2s ease;
+}
+
+/* Editable budget amount (when unlocked) */
+.budget-amount.editable {
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-decoration-color: #9d4edd;
+    text-underline-offset: 4px;
+    cursor: pointer;
+}
+
+/* Budget input for editing */
+.budget-input {
+    font-size: 11.5px;
+    font-weight: bold;
+    color: #9d4edd;
+    border: 2px solid #9d4edd;
+    border-radius: 8px;
+    background: #282d31;
+    padding: 4px 8px;
+    width: 120px;
+    outline: none;
+}
+
+.budget-input:focus {
+    border-color: #7b2cbf;
+}
+
 /* ===== PROGRESS BARS ===== */
 .progress-container {
     width: 100%;
     height: 30px;
-    background: #e9ecef;
+    background: #343a40;
     border-radius: 15px;
     overflow: hidden;
     margin: 10px 0;
@@ -246,18 +269,18 @@ body {
 }
 
 .budget-bar {
-    background: linear-gradient(90deg, #31572c 0%, #90a955 100%);
+    background: linear-gradient(90deg, #7b2cbf 0%, #c77dff 100%);
 }
 
 .spent-bar {
-    background: linear-gradient(90deg, #f56565 0%, #ed64a6 100%);
+    background: linear-gradient(90deg, #c53030 0%, #f56565 100%);
 }
 
 /* Stats text below progress bars */
 .stats-row {
     display: flex;
     justify-content: space-between;
-    color: #718096;
+    color: #dee2e6;
     font-size: 14px;
     font-family: 'Satoshi', sans-serif;
     font-weight: 400;
@@ -290,11 +313,11 @@ body {
 
 .form-group label {
     display: inline-block;
-    background: #edb458;   
+    background: #0466c8;   
     padding: 2px 15px;
     border-radius: 30px;
     margin-bottom: 5px;
-    color: #4a5568;
+    color: #e9ecef;
     font-size: 14px;
     font-family: 'Satoshi', sans-serif;
     font-weight: 600;
@@ -304,7 +327,9 @@ body {
 .form-group select {
     width: 100%;
     padding: 10px;
-    border: 1px solid #e2e8f0;
+    color: #dee2e6;
+    border: 2px solid #343a40;
+    background: #343a40;
     border-radius: 8px;
     font-family: 'Supreme', sans-serif;
     font-weight: 300;
@@ -315,13 +340,13 @@ body {
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #0466c8;
 }
 
 /* Add expense button */
 .btn-add {
-    background: #6a994e;
-    color: white;
+    background: #9d4edd;
+    color: #f8f9fa;
     border: none;
     padding: 15px;
     border-radius: 10px;
@@ -339,6 +364,21 @@ body {
     transform: translateY(-2px);
 }
 
+/* ===== PAYMENT METHOD BADGE ===== */
+.payment-method-badge {
+    font-size: 16px;
+    margin-left: 8px;
+    cursor: help;
+}
+
+/* Adjust expense row for payment badge */
+.expense-row:first-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
 /* ===== EXPENSES LIST ===== */
 .expenses-list {
     max-height: 400px;
@@ -351,12 +391,12 @@ body {
     display: flex;
     flex-direction: column;
     padding: 12px;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 3px solid #343a40;
     transition: background 0.2s;
 }
 
 .expense-item:hover {
-    background: #f7fafc;
+    background: #343a40;
 }
 
 /* Row inside expense item */
@@ -382,8 +422,8 @@ body {
 /* Category styling */
 .expense-category {
     font-weight: 600;
-    color: #4a5568;
-    background: #f0f2f5;
+    color: #f8f9fa;
+    background: #9d4edd;
     padding: 3px 8px;
     border-radius: 12px;
     display: inline-block;
@@ -392,13 +432,13 @@ body {
 /* Amount styling - now on the left */
 .expense-amount {
     font-weight: 600;
-    color: #2d3748;
+    color: #e9ecef;
     font-size: 16px;
 }
 
 /* Date styling - now in the middle */
 .expense-date {
-    color: #a0aec0;
+    color: #dee2e6;
     font-size: 14px;
     flex: 1;
     text-align: center;
@@ -408,16 +448,16 @@ body {
 .delete-expense {
     background: none;
     border: none;
-    color: #f56565;
+    color: #c53030;
     cursor: pointer;
     font-size: 18px;
     padding: 5px;
-    opacity: 0.5;
-    transition: opacity 0.2s;
+    transition: all 0.2s ease;
 }
 
 .delete-expense:hover {
-    opacity: 1;
+    color: #f56565;
+    transform: scale(1.2);
 }
 
 /* Empty state */
@@ -433,9 +473,9 @@ body {
     justify-content: space-between;
     align-items: center;
     padding-top: 15px;
-    border-top: 2px solid #edf2f7;
+    border-top: 2px solid #0466c8;
     font-size: 18px;
-    color: #2d3748;
+    color: #f8f9fa;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
