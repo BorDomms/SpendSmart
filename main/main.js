@@ -16,13 +16,14 @@ if (!session) {
     window.location.href = '/login/login.html';
 } else {
     console.log('Session found for:', session.user.email);
-    
-    // Continue loading the app
     initializeApp(session.user);
 }
 
 // ===== EXPENSES ARRAY =====
 let expenses = [];
+
+// ===== SAVING GOALS ARRAY =====
+let savingGoals = [];
 
 // ===== CONSTANTS =====
 let MONTHLY_BUDGET = 2500;
@@ -82,6 +83,55 @@ function setMonthFromLatestExpense() {
 function updateMonthDisplay() {
     document.getElementById('currentMonth').textContent = 
         `${monthNames[currentMonth]} ${currentYear}`;
+}
+
+// ===== CALCULATE SAVINGS =====
+function calculateSavings() {
+    const monthExpenses = expenses.filter(expense => {
+        const expenseDate = new Date(expense.date);
+        return expenseDate.getMonth() === currentMonth && 
+               expenseDate.getFullYear() === currentYear;
+    });
+    
+    const totalSpent = monthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+    const savings = MONTHLY_BUDGET - totalSpent;
+    return Math.max(0, savings);
+}
+
+// ===== UPDATE SAVING GOALS LIST =====
+function updateSavingGoalsList() {
+    const goalsList = document.getElementById('goalsList');
+    
+    if (savingGoals.length === 0) {
+        goalsList.innerHTML = `
+            <div class="empty-state">
+                <p>No saving goals yet. Add your first goal!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    goalsList.innerHTML = savingGoals.map(goal => {
+        const progress = (goal.saved / goal.target) * 100;
+        const remaining = goal.target - goal.saved;
+        
+        return `
+        <div class="goal-item" data-id="${goal.id}">
+            <div class="goal-header">
+                <span class="goal-name">${goal.name}</span>
+                <span class="goal-amount">₱${goal.saved.toFixed(2)} / ₱${goal.target.toFixed(2)}</span>
+            </div>
+            <div class="goal-progress">
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: ${progress}%"></div>
+                </div>
+                <div class="goal-stats">
+                    <span>${progress.toFixed(1)}% complete</span>
+                    <span>₱${remaining.toFixed(2)} left</span>
+                </div>
+            </div>
+        </div>
+    `}).join('');
 }
 
 // ===== UPDATE EXPENSES LIST =====
@@ -145,6 +195,7 @@ function updateDashboard() {
 
     const totalSpent = monthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
     const budgetLeft = MONTHLY_BUDGET - totalSpent;
+    const savings = calculateSavings();
     const spentPercentage = MONTHLY_BUDGET > 0 ? Math.min(100, (totalSpent / MONTHLY_BUDGET) * 100) : 0;
     const budgetPercentage = MONTHLY_BUDGET > 0 ? Math.min(100, Math.max(0, (budgetLeft / MONTHLY_BUDGET) * 100)) : 0;
 
@@ -155,8 +206,11 @@ function updateDashboard() {
     document.getElementById('spentPercentage').textContent = `${spentPercentage.toFixed(1)}% of budget used`;
     document.getElementById('budgetBar').style.width = `${budgetPercentage}%`;
     document.getElementById('spentBar').style.width = `${spentPercentage}%`;
+    
+    document.getElementById('savingsAmount').textContent = `${savings.toFixed(2)}`;
 
     updateExpensesList(monthExpenses);
+    updateSavingGoalsList();
     document.getElementById('monthlyTotal').textContent = totalSpent.toFixed(2);
     document.getElementById('expenseCount').textContent = 
         `${monthExpenses.length} item${monthExpenses.length !== 1 ? 's' : ''}`;
@@ -172,7 +226,6 @@ async function loadBudget(userId) {
             .single();
         
         if (error && error.code === 'PGRST116') {
-            // Profile doesn't exist, create one
             const { error: insertError } = await supabase
                 .from('profiles')
                 .insert([{ 
@@ -217,9 +270,32 @@ async function loadExpenses(userId) {
     }
 }
 
+// ===== LOAD SAVING GOALS FROM SUPABASE =====
+async function loadSavingGoals(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('saving_goals')
+            .select('*')
+            .eq('user_id', userId);
+        
+        if (error && error.code !== 'PGRST116') throw error;
+        
+        if (data) {
+            savingGoals = data.map(goal => ({
+                id: goal.id,
+                name: goal.name,
+                target: parseFloat(goal.target_amount),
+                saved: parseFloat(goal.current_amount) || 0
+            }));
+        }
+    } catch (error) {
+        console.error('Error loading saving goals:', error);
+    }
+}
+
 // ===== ADD LOCK ICON =====
 function addLockIcon() {
-    const budgetCardHeader = document.querySelector('.card:first-child .card-header');
+    const budgetCardHeader = document.querySelector('.left-column .card:nth-child(2) .card-header');
     if (!budgetCardHeader) return;
     
     const lockContainer = document.createElement('div');
@@ -318,10 +394,56 @@ async function editBudget() {
     input.addEventListener('blur', finishEditing);
 }
 
+// ===== ADD SAVING GOAL =====
+async function addSavingGoal() {
+    const name = prompt('Enter saving goal name:');
+    if (!name) return;
+    
+    const target = parseFloat(prompt('Enter target amount:'));
+    if (isNaN(target) || target <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        alert('Please log in again');
+        window.location.href = '/login/login.html';
+        return;
+    }
+    
+    try {
+        const { data, error } = await supabase
+            .from('saving_goals')
+            .insert([{
+                user_id: session.user.id,
+                name: name,
+                target_amount: target,
+                current_amount: 0
+            }])
+            .select();
+        
+        if (error) throw error;
+        
+        savingGoals.push({
+            id: data[0].id,
+            name: name,
+            target: target,
+            saved: 0
+        });
+        
+        updateSavingGoalsList();
+    } catch (error) {
+        console.error('Error adding saving goal:', error);
+        alert('Failed to add saving goal');
+    }
+}
+
 // ===== SETUP EVENT LISTENERS =====
 function setupEventListeners() {
     document.getElementById('expenseForm').addEventListener('submit', addExpense);
     document.getElementById('category').addEventListener('change', updateSubcategoryDropdown);
+    document.getElementById('addGoalBtn').addEventListener('click', addSavingGoal);
     
     document.getElementById('prevMonth').addEventListener('click', () => {
         if (currentMonth === 0) {
@@ -416,7 +538,6 @@ async function addExpense(event) {
         
         expenses.push(data[0]);
         
-        // Clear form
         document.getElementById('expenseForm').reset();
         document.getElementById('date').value = new Date().toISOString().split('T')[0];
         document.getElementById('paymentMethod').value = '';
@@ -478,6 +599,7 @@ async function initializeApp(user) {
     addLockIcon();
     await loadBudget(user.id);
     await loadExpenses(user.id);
+    await loadSavingGoals(user.id);
     setMonthFromLatestExpense();
     updateMonthDisplay();
     updateDashboard();

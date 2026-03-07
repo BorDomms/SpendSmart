@@ -13,152 +13,170 @@
     <!-- ===== NAVIGATION BAR ===== -->
     <nav class="top-nav">
         <div class="nav-container">
-            <div class="nav-left">
+            <div class="nav-left"></div>
+            <div class="nav-center">
+                <img src="/images/placeholderS.png" alt="SpendSmart Logo" class="logo-image">
+                <span>SpendSmart</span>
+            </div>
+            <div class="nav-right">
                 <button id="logoutBtn" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
-            </div>
-            <div class="nav-right">
-                <!-- Empty for now -->
             </div>
         </div>
     </nav>
 
     <div class="app">
-        <!-- ========== HEADER SECTION ========== -->
-        <header class="header">
-            <div class="logo-container">
-                <!-- Placeholder square for logo -->
-                <div class="logo-placeholder"></div>
-                <img src="/images/placeholderS.png" alt="SpendSmart Logo" class="logo-image">
-                <h1>SpendSmart</h1>
-            </div>
-            
-            <!-- Month navigation controls -->
-            <div class="month-display">
-                <button class="month-nav" id="prevMonth">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <span id="currentMonth">March 2026</span>
-                <button class="month-nav" id="nextMonth">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- ========== MAIN CONTENT ========== -->
+        <!-- ===== TWO-COLUMN MAIN CONTENT ===== -->
         <main class="main-content">
-            
-            <!-- ===== BUDGET CARD ===== -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>Monthly Budget</h2>
-                    <span class="budget-amount" id="budgetAmount">0</span>
+            <!-- LEFT COLUMN -->
+            <div class="left-column">
+                <!-- Savings and Month Selector (No card border) -->
+                <div class="card">
+                    <div class="savings-month-container">
+                        <div class="savings-display">
+                            <i class="fa-solid fa-piggy-bank"></i>
+                            <span id="savingsAmount">0.00</span>
+                        </div>
+                        
+                        <div class="month-display">
+                            <button class="month-nav" id="prevMonth">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <span id="currentMonth">March 2026</span>
+                            <button class="month-nav" id="nextMonth">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="progress-container">
-                    <div class="progress-bar budget-bar" id="budgetBar" style="width: 60%"></div>
+                <!-- Monthly Budget Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Monthly Budget</h2>
+                        <span class="budget-amount" id="budgetAmount">0.00</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar budget-bar" id="budgetBar" style="width: 60%"></div>
+                    </div>
+                    <div class="stats-row">
+                        <span id="budgetLeft">0 left</span>
+                        <span id="budgetPercentage">40% remaining</span>
+                    </div>
                 </div>
 
-                <div class="stats-row">
-                    <span id="budgetLeft">0 left</span>
-                    <span id="budgetPercentage">40% remaining</span>
+                <!-- Spent This Month Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Spent This Month</h2>
+                        <span class="spent-amount" id="spentAmount">0.00</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar spent-bar" id="spentBar" style="width: 60%"></div>
+                    </div>
+                    <div class="stats-row">
+                        <span id="spentPercentage">60% of budget used</span>
+                    </div>
+                </div>
+
+                <!-- Add New Expense Card -->
+                <div class="card">
+                    <h2>Add New Expense</h2>
+                    <form id="expenseForm" class="expense-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="amount">Amount</label>
+                                <input type="number" id="amount" step="any" min="0" placeholder="0.00" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="date">Date</label>
+                                <input type="date" id="date" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <select id="category" required>
+                                    <option value="" disabled selected>Select category</option>
+                                    <option value="Food">🍔 Food</option>
+                                    <option value="Transport">🚗 Transport</option>
+                                    <option value="Shopping">🛒 Shopping</option>
+                                    <option value="Entertainment">🎬 Entertainment</option>
+                                    <option value="Bills">💡 Bills</option>
+                                    <option value="Other">📦 Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="subcategory">Subcategory</label>
+                                <select id="subcategory" disabled>
+                                    <option value="" disabled selected>Select category first</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="paymentMethod">Payment Method</label>
+                                <select id="paymentMethod" required>
+                                    <option value="" disabled selected>Select payment method</option>
+                                    <option value="Cash">💵 Cash</option>
+                                    <option value="Credit Card">💳 Credit Card</option>
+                                    <option value="Debit Card">💳 Debit Card</option>
+                                    <option value="Bank Transfer">🏦 Bank Transfer</option>
+                                    <option value="E-Wallet">📱 E-Wallet</option>
+                                    <option value="Other">📦 Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-add">
+                            Add Expense
+                        </button>
+                    </form>
                 </div>
             </div>
 
-            <!-- ===== SPENT CARD ===== -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>Spent This Month</h2>
-                    <span class="spent-amount" id="spentAmount">1,500</span>
-                </div>
-                <div class="progress-container">
-                    <div class="progress-bar spent-bar" id="spentBar" style="width: 60%"></div>
-                </div>
-                <div class="stats-row">
-                    <span id="spentPercentage">60% of budget used</span>
-                </div>
-            </div>
-
-            <!-- ===== ADD EXPENSE FORM ===== -->
-            <div class="card">
-                <h2>Add New Expense</h2>
-                <form id="expenseForm" class="expense-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="amount">Amount</label>
-                            <input type="number" id="amount" step="any" min="0" placeholder="0.00" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="date">Date</label>
-                            <input type="date" id="date" required>
+            <!-- RIGHT COLUMN -->
+            <div class="right-column">
+                <!-- Saving Goals Card -->
+                <div class="card saving-goals-card">
+                    <div class="card-header">
+                        <h2>Saving Goals</h2>
+                        <i class="fa-solid fa-bullseye" style="color: #edb458;"></i>
+                    </div>
+                    
+                    <div class="goals-list" id="goalsList">
+                        <div class="empty-state">
+                            <p>No saving goals yet. Add your first goal!</p>
                         </div>
                     </div>
 
-                    <!-- Category and Subcategory -->
-                    <div class="form-row">
-                        <!-- Category dropdown -->
-                        <div class="form-group">
-                            <label for="category">Category</label>
-                            <select id="category" required>
-                                <option value="" disabled selected>Select category</option>
-                                <option value="Food">🍔 Food</option>
-                                <option value="Transport">🚗 Transport</option>
-                                <option value="Shopping">🛒 Shopping</option>
-                                <option value="Entertainment">🎬 Entertainment</option>
-                                <option value="Bills">💡 Bills</option>
-                                <option value="Other">📦 Other</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Subcategory dropdown -->
-                        <div class="form-group">
-                            <label for="subcategory">Subcategory</label>
-                            <select id="subcategory" disabled>
-                                <option value="" disabled selected>Select category first</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- ===== PAYMENT METHOD ROW ===== -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="paymentMethod">Payment Method</label>
-                            <select id="paymentMethod" required>
-                                <option value="" disabled selected>Select payment method</option>
-                                <option value="Cash">💵 Cash</option>
-                                <option value="Credit Card">💳 Credit Card</option>
-                                <option value="Debit Card">💳 Debit Card</option>
-                                <option value="Bank Transfer">🏦 Bank Transfer</option>
-                                <option value="E-Wallet">📱 E-Wallet</option>
-                                <option value="Other">📦 Other</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-add">
-                        Add Expense
+                    <button class="add-goal-btn" id="addGoalBtn">
+                        <i class="fa-solid fa-plus"></i> Add Saving Goal
                     </button>
-                </form>
-            </div>
+                </div>
 
-            <!-- ===== EXPENSES LIST ===== -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>Expenses This Month</h2>
-                    <span class="expense-count" id="expenseCount">0 items</span>
-                </div>
-                
-                <div class="expenses-list" id="expensesList">
-                    <div class="empty-state">
-                        <p>No expenses yet. Add your first expense above!</p>
+                <!-- Expenses This Month Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Expenses This Month</h2>
+                        <span class="expense-count" id="expenseCount">0 items</span>
                     </div>
-                </div>
-                
-                <div class="expenses-total">
-                    <strong>Total:</strong>
-                    <span id="monthlyTotal">0.00</span>
+                    
+                    <div class="expenses-list" id="expensesList">
+                        <div class="empty-state">
+                            <p>No expenses yet. Add your first expense above!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="expenses-total">
+                        <strong>Total:</strong>
+                        <span id="monthlyTotal">0.00</span>
+                    </div>
                 </div>
             </div>
         </main>
