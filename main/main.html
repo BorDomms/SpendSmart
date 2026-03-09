@@ -13,11 +13,21 @@
     <!-- ===== NAVIGATION BAR ===== -->
     <nav class="top-nav">
         <div class="nav-container">
-            <div class="nav-left"></div>
+            <!-- User name on the left -->
+            <div class="nav-left">
+                <div class="user-name" id="userNameDisplay">
+                    <i class="fa-regular fa-user"></i>
+                    <span>Loading...</span>
+                </div>
+            </div>
+            
+            <!-- Centered logo and brand -->
             <div class="nav-center">
                 <img src="/images/placeholderS.png" alt="SpendSmart Logo" class="logo-image">
                 <span>SpendSmart</span>
             </div>
+            
+            <!-- Logout button on the right -->
             <div class="nav-right">
                 <button id="logoutBtn" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i> Logout
@@ -27,160 +37,277 @@
     </nav>
 
     <div class="app">
-        <!-- ===== TWO-COLUMN MAIN CONTENT ===== -->
-        <main class="main-content">
-            <!-- LEFT COLUMN -->
-            <div class="left-column">
-                <!-- Savings and Month Selector (No card border) -->
-                <div class="card">
-                    <div class="savings-month-container">
-                        <div class="savings-display">
-                            <i class="fa-solid fa-piggy-bank"></i>
-                            <span id="savingsAmount">0.00</span>
+        <!-- ===== TAB CONTAINERS ===== -->
+        
+        <!-- HOME TAB -->
+        <div id="homeTab" class="tab-content active-tab">
+            <div class="savings-month-container">
+                <div class="savings-display">
+                    <i class="fa-solid fa-piggy-bank"></i>
+                    <span id="savingsAmount">0.00</span>
+                </div>
+                
+                <div class="month-display">
+                    <button class="month-nav" id="prevMonth">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <span id="currentMonth">March 2026</span>
+                    <button class="month-nav" id="nextMonth">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Monthly Budget Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Monthly Budget</h2>
+                    <span class="budget-amount" id="budgetAmount">0.00</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar budget-bar" id="budgetBar" style="width: 60%"></div>
+                </div>
+                <div class="stats-row">
+                    <span id="budgetLeft">0 left</span>
+                    <span id="budgetPercentage">40% remaining</span>
+                </div>
+            </div>
+
+            <!-- Spent This Month Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Spent This Month</h2>
+                    <span class="spent-amount" id="spentAmount">0.00</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar spent-bar" id="spentBar" style="width: 60%"></div>
+                </div>
+                <div class="stats-row">
+                    <span id="spentPercentage">60% of budget used</span>
+                </div>
+            </div>
+
+            <!-- Placeholder Tile 1 -->
+            <div class="card placeholder-card">
+                <div class="placeholder-content">
+                    <i class="fa-solid fa-chart-line placeholder-icon"></i>
+                    <h3>Spending Insights</h3>
+                    <p>Coming soon! Track your spending patterns.</p>
+                </div>
+            </div>
+
+            <!-- Placeholder Tile 2 -->
+            <div class="card placeholder-card">
+                <div class="placeholder-content">
+                    <i class="fa-solid fa-calendar-check placeholder-icon"></i>
+                    <h3>Upcoming Bills</h3>
+                    <p>Coming soon! Never miss a payment.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- BUDGETS TAB -->
+        <div id="budgetsTab" class="tab-content">
+            <!-- Placeholder Tile 1 -->
+            <div class="card placeholder-card">
+                <div class="placeholder-content">
+                    <i class="fa-solid fa-chart-pie placeholder-icon"></i>
+                    <h3>Category Budgets</h3>
+                    <p>Set budgets for Food, Transport, Shopping, and more.</p>
+                </div>
+            </div>
+
+            <!-- Placeholder Tile 2 -->
+            <div class="card placeholder-card">
+                <div class="placeholder-content">
+                    <i class="fa-solid fa-clock placeholder-icon"></i>
+                    <h3>Monthly Comparison</h3>
+                    <p>Compare your spending month by month.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAVINGS TAB -->
+        <div id="savingsTab" class="tab-content">
+            <!-- Savings Targets Card -->
+            <div class="card saving-goals-card">
+                <div class="card-header">
+                    <h2>Savings Targets</h2>
+                    <i class="fa-solid fa-bullseye" style="color: #edb458;"></i>
+                </div>
+                
+                <div class="goals-list" id="goalsList">
+                    <div class="empty-state">
+                        <p>No savings targets yet.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Goal Card -->
+            <div class="card add-goal-card">
+                <div class="card-header">
+                    <h2>Create New Target</h2>
+                    <i class="fa-solid fa-plus-circle" style="color: #9d4edd;"></i>
+                </div>
+                
+                <div class="goal-form-compact" id="goalFormCompact">
+                    <div class="form-group">
+                        <label for="goalToCompact">What are you saving for?</label>
+                        <select id="goalToCompact" class="goal-select" required>
+                            <option value="" disabled selected>Select goal type</option>
+                            <option value="Emergency Fund">🚨 Emergency Fund</option>
+                            <option value="Vacation">✈️ Vacation</option>
+                            <option value="New Gadget">📱 New Gadget</option>
+                            <option value="Car">🚗 Car</option>
+                            <option value="House">🏠 House</option>
+                            <option value="Education">📚 Education</option>
+                            <option value="Other">📦 Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="goalFromCompact">Category to save from</label>
+                        <select id="goalFromCompact" class="goal-select" required>
+                            <option value="" disabled selected>Select category</option>
+                            <option value="Food">🍔 Food</option>
+                            <option value="Transport">🚗 Transport</option>
+                            <option value="Shopping">🛒 Shopping</option>
+                            <option value="Entertainment">🎬 Entertainment</option>
+                            <option value="Bills">💡 Bills</option>
+                            <option value="All Categories">📊 All Categories</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="goalAmountCompact">Target amount</label>
+                        <input type="number" id="goalAmountCompact" class="goal-input" step="any" min="0" placeholder="Enter amount">
+                    </div>
+
+                    <button type="button" class="btn-create" id="createGoalCompactBtn">
+                        <i class="fa-solid fa-check"></i> Create Goal
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIST TAB -->
+        <div id="listTab" class="tab-content">
+            <!-- Expenses This Month Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Expenses This Month</h2>
+                    <span class="expense-count" id="expenseCount">0 items</span>
+                </div>
+                
+                <div class="expenses-list" id="expensesList">
+                    <div class="empty-state">
+                        <p>No expenses yet for March 2026!</p>
+                    </div>
+                </div>
+                
+                <div class="expenses-total">
+                    <strong>Total:</strong>
+                    <span id="monthlyTotal">0.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ADD EXPENSE MODAL (BOTTOM SHEET) ===== -->
+    <div class="modal-overlay" id="addExpenseModal" style="display: none;">
+        <div class="bottom-sheet">
+            <div class="bottom-sheet-handle"></div>
+            <div class="bottom-sheet-content">
+                <h2>Add New Expense</h2>
+                <form id="expenseForm" class="expense-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="amount">Amount</label>
+                            <input type="number" id="amount" step="any" min="0" placeholder="0.00" required>
                         </div>
                         
-                        <div class="month-display">
-                            <button class="month-nav" id="prevMonth">
-                                <i class="fa-solid fa-chevron-left"></i>
-                            </button>
-                            <span id="currentMonth">March 2026</span>
-                            <button class="month-nav" id="nextMonth">
-                                <i class="fa-solid fa-chevron-right"></i>
-                            </button>
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date" required>
                         </div>
                     </div>
-                </div>
 
-                <!-- Monthly Budget Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Monthly Budget</h2>
-                        <span class="budget-amount" id="budgetAmount">0.00</span>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-bar budget-bar" id="budgetBar" style="width: 60%"></div>
-                    </div>
-                    <div class="stats-row">
-                        <span id="budgetLeft">0 left</span>
-                        <span id="budgetPercentage">40% remaining</span>
-                    </div>
-                </div>
-
-                <!-- Spent This Month Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Spent This Month</h2>
-                        <span class="spent-amount" id="spentAmount">0.00</span>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-bar spent-bar" id="spentBar" style="width: 60%"></div>
-                    </div>
-                    <div class="stats-row">
-                        <span id="spentPercentage">60% of budget used</span>
-                    </div>
-                </div>
-
-                <!-- Add New Expense Card -->
-                <div class="card">
-                    <h2>Add New Expense</h2>
-                    <form id="expenseForm" class="expense-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="amount">Amount</label>
-                                <input type="number" id="amount" step="any" min="0" placeholder="0.00" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="date">Date</label>
-                                <input type="date" id="date" required>
-                            </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" required>
+                                <option value="" disabled selected>Select category</option>
+                                <option value="Food">🍔 Food</option>
+                                <option value="Transport">🚗 Transport</option>
+                                <option value="Shopping">🛒 Shopping</option>
+                                <option value="Entertainment">🎬 Entertainment</option>
+                                <option value="Bills">💡 Bills</option>
+                                <option value="Other">📦 Other</option>
+                            </select>
                         </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="category">Category</label>
-                                <select id="category" required>
-                                    <option value="" disabled selected>Select category</option>
-                                    <option value="Food">🍔 Food</option>
-                                    <option value="Transport">🚗 Transport</option>
-                                    <option value="Shopping">🛒 Shopping</option>
-                                    <option value="Entertainment">🎬 Entertainment</option>
-                                    <option value="Bills">💡 Bills</option>
-                                    <option value="Other">📦 Other</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="subcategory">Subcategory</label>
-                                <select id="subcategory" disabled>
-                                    <option value="" disabled selected>Select category first</option>
-                                </select>
-                            </div>
+                        
+                        <div class="form-group">
+                            <label for="subcategory">Subcategory</label>
+                            <select id="subcategory" disabled>
+                                <option value="" disabled selected>Select category first</option>
+                            </select>
                         </div>
+                    </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="paymentMethod">Payment Method</label>
-                                <select id="paymentMethod" required>
-                                    <option value="" disabled selected>Select payment method</option>
-                                    <option value="Cash">💵 Cash</option>
-                                    <option value="Credit Card">💳 Credit Card</option>
-                                    <option value="Debit Card">💳 Debit Card</option>
-                                    <option value="Bank Transfer">🏦 Bank Transfer</option>
-                                    <option value="E-Wallet">📱 E-Wallet</option>
-                                    <option value="Other">📦 Other</option>
-                                </select>
-                            </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="paymentMethod">Payment Method</label>
+                            <select id="paymentMethod" required>
+                                <option value="" disabled selected>Select payment method</option>
+                                <option value="Cash">💵 Cash</option>
+                                <option value="Credit Card">💳 Credit Card</option>
+                                <option value="Debit Card">💳 Debit Card</option>
+                                <option value="Bank Transfer">🏦 Bank Transfer</option>
+                                <option value="E-Wallet">📱 E-Wallet</option>
+                                <option value="Other">📦 Other</option>
+                            </select>
                         </div>
+                    </div>
 
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" id="cancelAddExpense">Cancel</button>
                         <button type="submit" class="btn-add">
                             Add Expense
                         </button>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
-
-            <!-- RIGHT COLUMN -->
-            <div class="right-column">
-                <!-- Saving Goals Card -->
-                <div class="card saving-goals-card">
-                    <div class="card-header">
-                        <h2>Saving Goals</h2>
-                        <i class="fa-solid fa-bullseye" style="color: #edb458;"></i>
-                    </div>
-                    
-                    <div class="goals-list" id="goalsList">
-                        <div class="empty-state">
-                            <p>No saving goals yet. Add your first goal!</p>
-                        </div>
-                    </div>
-
-                    <button class="add-goal-btn" id="addGoalBtn">
-                        <i class="fa-solid fa-plus"></i> Add Saving Goal
-                    </button>
-                </div>
-
-                <!-- Expenses This Month Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Expenses This Month</h2>
-                        <span class="expense-count" id="expenseCount">0 items</span>
-                    </div>
-                    
-                    <div class="expenses-list" id="expensesList">
-                        <div class="empty-state">
-                            <p>No expenses yet. Add your first expense above!</p>
-                        </div>
-                    </div>
-                    
-                    <div class="expenses-total">
-                        <strong>Total:</strong>
-                        <span id="monthlyTotal">0.00</span>
-                    </div>
-                </div>
-            </div>
-        </main>
+        </div>
     </div>
+
+    <!-- ===== BOTTOM NAVIGATION FOOTER ===== -->
+    <footer class="bottom-nav">
+        <div class="footer-container">
+            <button class="footer-btn active" id="homeTabBtn">
+                <i class="fa-solid fa-home"></i>
+                <span>Home</span>
+            </button>
+            
+            <button class="footer-btn" id="budgetsTabBtn">
+                <i class="fa-solid fa-dollar-sign"></i>
+                <span>Budgets</span>
+            </button>
+            
+            <button class="footer-btn add-btn" id="addTabBtn">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+            
+            <button class="footer-btn" id="savingsTabBtn">
+                <i class="fa-solid fa-piggy-bank"></i>
+                <span>Savings</span>
+            </button>
+            
+            <button class="footer-btn" id="listTabBtn">
+                <i class="fa-solid fa-list"></i>
+                <span>List</span>
+            </button>
+        </div>
+    </footer>
 
     <script type="module" src="main.js"></script>
 </body>

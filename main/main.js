@@ -22,8 +22,8 @@ if (!session) {
 // ===== EXPENSES ARRAY =====
 let expenses = [];
 
-// ===== SAVING GOALS ARRAY =====
-let savingGoals = [];
+// ===== SAVINGS TARGETS ARRAY =====
+let savingsTargets = [];
 
 // ===== CONSTANTS =====
 let MONTHLY_BUDGET = 2500;
@@ -46,6 +46,10 @@ let currentYear = currentDate.getFullYear();
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
 ];
+
+// ===== STATE =====
+let currentTab = 'home';
+let isModalOpen = false;
 
 // ===== HELPER FUNCTIONS =====
 function getCategoryEmoji(category) {
@@ -98,28 +102,28 @@ function calculateSavings() {
     return Math.max(0, savings);
 }
 
-// ===== UPDATE SAVING GOALS LIST =====
-function updateSavingGoalsList() {
+// ===== UPDATE SAVINGS TARGETS LIST =====
+function updateSavingsTargetsList() {
     const goalsList = document.getElementById('goalsList');
     
-    if (savingGoals.length === 0) {
+    if (savingsTargets.length === 0) {
         goalsList.innerHTML = `
             <div class="empty-state">
-                <p>No saving goals yet. Add your first goal!</p>
+                <p>No savings targets yet.</p>
             </div>
         `;
         return;
     }
     
-    goalsList.innerHTML = savingGoals.map(goal => {
-        const progress = (goal.saved / goal.target) * 100;
-        const remaining = goal.target - goal.saved;
+    goalsList.innerHTML = savingsTargets.map(target => {
+        const progress = (target.saved / target.target) * 100;
+        const remaining = target.target - target.saved;
         
         return `
-        <div class="goal-item" data-id="${goal.id}">
+        <div class="goal-item" data-id="${target.id}">
             <div class="goal-header">
-                <span class="goal-name">${goal.name}</span>
-                <span class="goal-amount">₱${goal.saved.toFixed(2)} / ₱${goal.target.toFixed(2)}</span>
+                <span class="goal-name">${target.name}</span>
+                <span class="goal-amount">₱${target.saved.toFixed(2)} / ₱${target.target.toFixed(2)}</span>
             </div>
             <div class="goal-progress">
                 <div class="progress-container">
@@ -129,6 +133,9 @@ function updateSavingGoalsList() {
                     <span>${progress.toFixed(1)}% complete</span>
                     <span>₱${remaining.toFixed(2)} left</span>
                 </div>
+            </div>
+            <div class="goal-source">
+                <i class="fa-solid fa-filter"></i> Saving from: ${target.source || 'All categories'}
             </div>
         </div>
     `}).join('');
@@ -141,7 +148,7 @@ function updateExpensesList(monthExpenses) {
     if (monthExpenses.length === 0) {
         expensesList.innerHTML = `
             <div class="empty-state">
-                <p>No expenses yet for ${monthNames[currentMonth]}. Add your first expense above!</p>
+                <p>No expenses yet for ${monthNames[currentMonth]}!</p>
             </div>
         `;
         return;
@@ -210,7 +217,7 @@ function updateDashboard() {
     document.getElementById('savingsAmount').textContent = `${savings.toFixed(2)}`;
 
     updateExpensesList(monthExpenses);
-    updateSavingGoalsList();
+    updateSavingsTargetsList();
     document.getElementById('monthlyTotal').textContent = totalSpent.toFixed(2);
     document.getElementById('expenseCount').textContent = 
         `${monthExpenses.length} item${monthExpenses.length !== 1 ? 's' : ''}`;
@@ -270,32 +277,34 @@ async function loadExpenses(userId) {
     }
 }
 
-// ===== LOAD SAVING GOALS FROM SUPABASE =====
-async function loadSavingGoals(userId) {
+// ===== LOAD SAVINGS TARGETS FROM SUPABASE =====
+async function loadSavingsTargets(userId) {
     try {
         const { data, error } = await supabase
-            .from('saving_goals')
+            .from('savings_targets')
             .select('*')
             .eq('user_id', userId);
         
         if (error && error.code !== 'PGRST116') throw error;
         
         if (data) {
-            savingGoals = data.map(goal => ({
+            savingsTargets = data.map(goal => ({
                 id: goal.id,
                 name: goal.name,
                 target: parseFloat(goal.target_amount),
-                saved: parseFloat(goal.current_amount) || 0
+                saved: parseFloat(goal.current_amount) || 0,
+                type: goal.target_type,
+                source: goal.source_category
             }));
         }
     } catch (error) {
-        console.error('Error loading saving goals:', error);
+        console.error('Error loading savings targets:', error);
     }
 }
 
 // ===== ADD LOCK ICON =====
 function addLockIcon() {
-    const budgetCardHeader = document.querySelector('.left-column .card:nth-child(2) .card-header');
+    const budgetCardHeader = document.querySelector('#homeTab .card:nth-child(2) .card-header');
     if (!budgetCardHeader) return;
     
     const lockContainer = document.createElement('div');
@@ -394,13 +403,20 @@ async function editBudget() {
     input.addEventListener('blur', finishEditing);
 }
 
-// ===== ADD SAVING GOAL =====
-async function addSavingGoal() {
-    const name = prompt('Enter saving goal name:');
-    if (!name) return;
+// ===== CREATE NEW SAVINGS TARGET (COMPACT) =====
+async function createNewGoalCompact() {
+    const goalTo = document.getElementById('goalToCompact').value;
+    const goalFrom = document.getElementById('goalFromCompact').value;
+    const goalAmount = document.getElementById('goalAmountCompact').value;
     
-    const target = parseFloat(prompt('Enter target amount:'));
-    if (isNaN(target) || target <= 0) {
+    // Validation
+    if (!goalTo || !goalFrom || !goalAmount) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    const amount = parseFloat(goalAmount);
+    if (isNaN(amount) || amount <= 0) {
         alert('Please enter a valid amount');
         return;
     }
@@ -412,39 +428,57 @@ async function addSavingGoal() {
         return;
     }
     
+    // Prepare the data object
+    const newTarget = {
+        user_id: session.user.id,
+        name: `${goalTo} (from ${goalFrom})`,
+        target_amount: amount,
+        current_amount: 0,
+        target_type: goalTo,
+        source_category: goalFrom,
+        created_at: new Date().toISOString()
+    };
+    
     try {
         const { data, error } = await supabase
-            .from('saving_goals')
-            .insert([{
-                user_id: session.user.id,
-                name: name,
-                target_amount: target,
-                current_amount: 0
-            }])
+            .from('savings_targets')
+            .insert([newTarget])
             .select();
         
         if (error) throw error;
         
-        savingGoals.push({
+        savingsTargets.push({
             id: data[0].id,
-            name: name,
-            target: target,
-            saved: 0
+            name: `${goalTo} (from ${goalFrom})`,
+            target: amount,
+            saved: 0,
+            type: goalTo,
+            source: goalFrom
         });
         
-        updateSavingGoalsList();
+        // Clear form
+        document.getElementById('goalToCompact').value = '';
+        document.getElementById('goalFromCompact').value = '';
+        document.getElementById('goalAmountCompact').value = '';
+        
+        updateSavingsTargetsList();
+        
     } catch (error) {
-        console.error('Error adding saving goal:', error);
-        alert('Failed to add saving goal');
+        console.error('Error adding savings target:', error);
+        alert('Failed to add savings target');
     }
 }
 
 // ===== SETUP EVENT LISTENERS =====
 function setupEventListeners() {
+    // Form submissions
     document.getElementById('expenseForm').addEventListener('submit', addExpense);
     document.getElementById('category').addEventListener('change', updateSubcategoryDropdown);
-    document.getElementById('addGoalBtn').addEventListener('click', addSavingGoal);
     
+    // Compact goal form
+    document.getElementById('createGoalCompactBtn').addEventListener('click', createNewGoalCompact);
+    
+    // Month navigation
     document.getElementById('prevMonth').addEventListener('click', () => {
         if (currentMonth === 0) {
             currentMonth = 11;
@@ -538,6 +572,7 @@ async function addExpense(event) {
         
         expenses.push(data[0]);
         
+        // Reset form
         document.getElementById('expenseForm').reset();
         document.getElementById('date').value = new Date().toISOString().split('T')[0];
         document.getElementById('paymentMethod').value = '';
@@ -545,6 +580,9 @@ async function addExpense(event) {
         const subcategorySelect = document.getElementById('subcategory');
         subcategorySelect.disabled = true;
         subcategorySelect.innerHTML = '<option value="" disabled selected>Select category first</option>';
+        
+        // Close modal
+        closeAddExpenseModal();
         
         updateDashboard();
     } catch (error) {
@@ -583,6 +621,35 @@ async function deleteExpense(id) {
 
 window.deleteExpense = deleteExpense;
 
+// ===== DISPLAY USER NAME =====
+async function displayUserName(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', userId)
+            .single();
+        
+        if (error) throw error;
+        
+        const userNameElement = document.getElementById('userNameDisplay');
+        if (data) {
+            const firstName = data.first_name || 'User';
+            const lastName = data.last_name ? ` ${data.last_name}` : '';
+            userNameElement.innerHTML = `
+                <i class="fa-regular fa-user"></i>
+                <span class="full-name">${firstName}${lastName}</span>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading user name:', error);
+        document.getElementById('userNameDisplay').innerHTML = `
+            <i class="fa-regular fa-user"></i>
+            <span class="full-name">User</span>
+        `;
+    }
+}
+
 // ===== LOGOUT FUNCTION =====
 function setupLogoutButton() {
     const logoutBtn = document.getElementById('logoutBtn');
@@ -594,19 +661,108 @@ function setupLogoutButton() {
     }
 }
 
+// ===== TAB NAVIGATION =====
+function setupTabNavigation() {
+    const homeBtn = document.getElementById('homeTabBtn');
+    const budgetsBtn = document.getElementById('budgetsTabBtn');
+    const addBtn = document.getElementById('addTabBtn');
+    const savingsBtn = document.getElementById('savingsTabBtn');
+    const listBtn = document.getElementById('listTabBtn');
+    
+    // Get all tab content divs
+    const homeTab = document.getElementById('homeTab');
+    const budgetsTab = document.getElementById('budgetsTab');
+    const savingsTab = document.getElementById('savingsTab');
+    const listTab = document.getElementById('listTab');
+    
+    // Function to switch tabs
+    function switchTab(tabId) {
+        // Hide all tabs
+        homeTab.classList.remove('active-tab');
+        budgetsTab.classList.remove('active-tab');
+        savingsTab.classList.remove('active-tab');
+        listTab.classList.remove('active-tab');
+        
+        // Show selected tab
+        document.getElementById(tabId).classList.add('active-tab');
+        
+        // Update active button state
+        document.querySelectorAll('.footer-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+    }
+    
+    homeBtn.addEventListener('click', () => {
+        switchTab('homeTab');
+        homeBtn.classList.add('active');
+        currentTab = 'home';
+    });
+    
+    budgetsBtn.addEventListener('click', () => {
+        switchTab('budgetsTab');
+        budgetsBtn.classList.add('active');
+        currentTab = 'budgets';
+    });
+    
+    addBtn.addEventListener('click', () => {
+        // Open modal instead of switching tab
+        openAddExpenseModal();
+    });
+    
+    savingsBtn.addEventListener('click', () => {
+        switchTab('savingsTab');
+        savingsBtn.classList.add('active');
+        currentTab = 'savings';
+        updateSavingsTargetsList();
+    });
+    
+    listBtn.addEventListener('click', () => {
+        switchTab('listTab');
+        listBtn.classList.add('active');
+        currentTab = 'list';
+        updateDashboard();
+    });
+}
+
+// ===== MODAL FUNCTIONS =====
+function openAddExpenseModal() {
+    const modal = document.getElementById('addExpenseModal');
+    modal.style.display = 'flex';
+    isModalOpen = true;
+    
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+}
+
+function closeAddExpenseModal() {
+    const modal = document.getElementById('addExpenseModal');
+    modal.style.display = 'none';
+    isModalOpen = false;
+}
+
 // ===== INITIALIZE APP =====
 async function initializeApp(user) {
     addLockIcon();
     await loadBudget(user.id);
     await loadExpenses(user.id);
-    await loadSavingGoals(user.id);
+    await loadSavingsTargets(user.id);
+    await displayUserName(user.id);
     setMonthFromLatestExpense();
     updateMonthDisplay();
     updateDashboard();
     setupEventListeners();
+    setupTabNavigation();
     
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('date').value = today;
+    // Set up modal close button
+    document.getElementById('cancelAddExpense').addEventListener('click', closeAddExpenseModal);
+    
+    // Close modal when clicking overlay
+    document.getElementById('addExpenseModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('addExpenseModal')) {
+            closeAddExpenseModal();
+        }
+    });
     
     setupLogoutButton();
 }
