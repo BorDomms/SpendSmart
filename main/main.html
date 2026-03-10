@@ -8,8 +8,6 @@
 
     <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,301,400,401,500,501,700,701,900,901,1,2&f[]=supreme@100,101,200,201,300,301,400,401,500,501,700,701,800,801,1,2&f[]=chillax@200,300,400,500,600,700,1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    <!-- BorDomms -->>
 </head>
 <body>
     <!-- ===== NAVIGATION BAR ===== -->
@@ -43,67 +41,100 @@
         
         <!-- HOME TAB -->
         <div id="homeTab" class="tab-content active-tab">
-            <div class="savings-month-container">
-                <div class="savings-display">
-                    <i class="fa-solid fa-piggy-bank"></i>
-                    <span id="savingsAmount">0.00</span>
-                </div>
-                
-                <div class="month-display">
-                    <button class="month-nav" id="prevMonth">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </button>
-                    <span id="currentMonth">March 2026</span>
-                    <button class="month-nav" id="nextMonth">
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
+            <!-- Two-column layout for Home tab -->
+            <div class="home-grid">
+                <!-- Left Column - All cards stacked vertically -->
+                <div class="home-left">
+                    <!-- Row 1: Savings and Month Selector (side by side) -->
+                    <div class="card-row">
+                        <!-- Savings Card (half width) with progress bar -->
+                        <div class="card half-card savings-card">
+                            <div class="card-header">
+                                <h2>Savings</h2>
+                                <i class="fa-solid fa-piggy-bank" style="color: #edb458;"></i>
+                            </div>
+                            <div class="savings-display-large">
+                                <span id="savingsAmount">0.00</span> / <span id="savingsGoal">10000.00</span>
+                            </div>
+                            <div class="progress-container savings-progress">
+                                <div class="progress-bar savings-bar" id="savingsProgressBar" style="width: 0%"></div>
+                            </div>
+                            <div class="stats-row savings-stats">
+                                <span id="savingsProgressText">0% of goal</span>
+                                <span id="savingsRemaining">₱10000 left</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Month Selector Card (half width) -->
+                        <div class="card half-card month-selector-card">
+                            <div class="card-header">
+                                <h2>Month</h2>
+                                <i class="fa-solid fa-calendar" style="color: #9d4edd;"></i>
+                            </div>
+                            <div class="month-nav-container">
+                                <button class="month-nav" id="prevMonth">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </button>
+                                <span id="currentMonth">March 2026</span>
+                                <button class="month-nav" id="nextMonth">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Monthly Budget Card -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>Monthly Budget</h2>
-                    <span class="budget-amount" id="budgetAmount">0.00</span>
-                </div>
-                <div class="progress-container">
-                    <div class="progress-bar budget-bar" id="budgetBar" style="width: 60%"></div>
-                </div>
-                <div class="stats-row">
-                    <span id="budgetLeft">0 left</span>
-                    <span id="budgetPercentage">40% remaining</span>
-                </div>
-            </div>
+                    <!-- Row 2: Monthly Budget and Spent This Month (side by side) -->
+                    <div class="card-row">
+                        <!-- Monthly Budget Card (Half size) -->
+                        <div class="card half-card">
+                            <div class="card-header">
+                                <h2>Monthly Budget</h2>
+                                <span class="budget-amount" id="budgetAmount">0.00</span>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar budget-bar" id="budgetBar" style="width: 60%"></div>
+                            </div>
+                            <div class="stats-row">
+                                <span id="budgetLeft">0 left</span>
+                                <span id="budgetPercentage">40% remaining</span>
+                            </div>
+                        </div>
 
-            <!-- Spent This Month Card -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>Spent This Month</h2>
-                    <span class="spent-amount" id="spentAmount">0.00</span>
+                        <!-- Spent This Month Card (Half size) -->
+                        <div class="card half-card">
+                            <div class="card-header">
+                                <h2>Spent This Month</h2>
+                                <span class="spent-amount" id="spentAmount">0.00</span>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar spent-bar" id="spentBar" style="width: 60%"></div>
+                            </div>
+                            <div class="stats-row">
+                                <span id="spentPercentage">60% of budget used</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="progress-container">
-                    <div class="progress-bar spent-bar" id="spentBar" style="width: 60%"></div>
-                </div>
-                <div class="stats-row">
-                    <span id="spentPercentage">60% of budget used</span>
-                </div>
-            </div>
 
-            <!-- Placeholder Tile 1 -->
-            <div class="card placeholder-card">
-                <div class="placeholder-content">
-                    <i class="fa-solid fa-chart-line placeholder-icon"></i>
-                    <h3>Spending Insights</h3>
-                    <p>Coming soon! Track your spending patterns.</p>
-                </div>
-            </div>
+                <!-- Right Column - Placeholder Cards (UNCHANGED) -->
+                <div class="home-right">
+                    <!-- Placeholder Tile 1 -->
+                    <div class="card placeholder-card">
+                        <div class="placeholder-content">
+                            <i class="fa-solid fa-chart-line placeholder-icon"></i>
+                            <h3>Spending Insights</h3>
+                            <p>Coming soon! Track your spending patterns.</p>
+                        </div>
+                    </div>
 
-            <!-- Placeholder Tile 2 -->
-            <div class="card placeholder-card">
-                <div class="placeholder-content">
-                    <i class="fa-solid fa-calendar-check placeholder-icon"></i>
-                    <h3>Upcoming Bills</h3>
-                    <p>Coming soon! Never miss a payment.</p>
+                    <!-- Placeholder Tile 2 -->
+                    <div class="card placeholder-card">
+                        <div class="placeholder-content">
+                            <i class="fa-solid fa-clock placeholder-icon"></i>
+                            <h3>Placeholder</h3>
+                            <p>Coming soon! Future feature here.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
