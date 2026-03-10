@@ -54,14 +54,14 @@
                                 <i class="fa-solid fa-piggy-bank" style="color: #edb458;"></i>
                             </div>
                             <div class="savings-display-large">
-                                <span id="savingsAmount">0.00</span> / <span id="savingsGoal">10000.00</span>
+                                <span id="savingsAmount">0.00</span>
                             </div>
                             <div class="progress-container savings-progress">
                                 <div class="progress-bar savings-bar" id="savingsProgressBar" style="width: 0%"></div>
                             </div>
                             <div class="stats-row savings-stats">
                                 <span id="savingsProgressText">0% of goal</span>
-                                <span id="savingsRemaining">₱10000 left</span>
+                                <span id="savingsRemaining">₱0 left</span>
                             </div>
                         </div>
                         
@@ -71,11 +71,13 @@
                                 <h2>Month</h2>
                                 <i class="fa-solid fa-calendar" style="color: #9d4edd;"></i>
                             </div>
+                            <div class="month-display-large">
+                                <span id="currentMonth">March 2026</span>
+                            </div>
                             <div class="month-nav-container">
                                 <button class="month-nav" id="prevMonth">
                                     <i class="fa-solid fa-chevron-left"></i>
                                 </button>
-                                <span id="currentMonth">March 2026</span>
                                 <button class="month-nav" id="nextMonth">
                                     <i class="fa-solid fa-chevron-right"></i>
                                 </button>
@@ -83,12 +85,15 @@
                         </div>
                     </div>
 
-                    <!-- Row 2: Monthly Budget and Spent This Month (side by side) -->
+                   <!-- Row 2: Monthly Budget and Spent This Month (side by side) -->
                     <div class="card-row">
                         <!-- Monthly Budget Card (Half size) -->
                         <div class="card half-card">
                             <div class="card-header">
                                 <h2>Monthly Budget</h2>
+                                <i class="fa-solid fa-lock lock-icon locked" id="budgetLockIcon" data-locked="true"></i>
+                            </div>
+                            <div class="amount-display-large budget-display">
                                 <span class="budget-amount" id="budgetAmount">0.00</span>
                             </div>
                             <div class="progress-container">
@@ -104,6 +109,9 @@
                         <div class="card half-card">
                             <div class="card-header">
                                 <h2>Spent This Month</h2>
+                                <i class="fa-solid fa-credit-card" style="color: #f56565;"></i>
+                            </div>
+                            <div class="amount-display-large spent-display">
                                 <span class="spent-amount" id="spentAmount">0.00</span>
                             </div>
                             <div class="progress-container">

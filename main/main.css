@@ -105,12 +105,6 @@ body {
     font-size: 28px;
 }
 
-.savings-display-large #savingsGoal {
-    color: #a0aec0;
-    font-size: 20px;
-    margin-left: 5px;
-}
-
 .savings-progress {
     height: 20px !important;
     margin: 10px 0 5px !important;
@@ -131,20 +125,81 @@ body {
     font-weight: 600;
 }
 
-/* Month selector card specific styles */
+/* ===== AMOUNT DISPLAY STYLES (for budget and spent cards) ===== */
+.amount-display-large {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    padding: 10px 0 5px;
+    text-align: center;
+}
+
+.budget-display .budget-amount {
+    font-size: 28px;
+    color: #9d4edd;
+}
+
+.spent-display .spent-amount {
+    font-size: 28px;
+    color: #f56565;
+}
+
+/* ===== MONTH SELECTOR CARD WITH LARGE DATE DISPLAY ===== */
+.month-display-large {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #f8f9fa;
+    padding: 10px 0 5px;
+    text-align: center;
+    min-height: 60px; /* Ensures consistent height with other cards */
+}
+
+.month-display-large #currentMonth {
+    font-size: 28px;
+    font-weight: 600;
+    color: #f8f9fa;
+}
+
+/* Updated month navigation container */
 .month-nav-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 30px;
     padding: 10px 0;
+    margin-top: 5px;
 }
 
-.month-nav-container #currentMonth {
-    min-width: 120px;
-    text-align: center;
-    font-weight: 500;
-    color: #f8f9fa;
-    font-size: 16px;
+/* Blue clean arrow styles */
+.month-nav {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #0466c8;
+    font-weight: bold;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    border-radius: 8px;
+}
+
+.month-nav:hover {
+    color: #4361ee;
+    background: rgba(4, 102, 200, 0.1);
+    transform: scale(1.1);
+}
+
+.month-nav i {
+    font-size: 20px;
 }
 
 /* Hide the old savings-month-container */
@@ -301,7 +356,7 @@ body {
 }
 
 /* ===== LOCK ICON STYLES ===== */
-.lock-icon {
+#budgetLockIcon {
     font-size: 18px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -309,24 +364,25 @@ body {
     margin-left: 10px;
 }
 
-.lock-icon.unlocked {
+#budgetLockIcon.unlocked {
     color: #c53030;
 }
 
-.lock-icon:hover {
+#budgetLockIcon:hover {
     color: #4361ee;
     transform: scale(1.2);
 }
 
-.lock-icon.unlocked:hover {
+#budgetLockIcon.unlocked:hover {
     color: #ff5153;
     transform: scale(1.2);
 }
 
+/* Budget amount styles */
 .budget-amount {
-    font-size: 20px;
-    font-weight: bold;
-    color: #9d4edd;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
     transition: all 0.2s ease;
 }
 
@@ -920,13 +976,37 @@ body {
         font-size: 24px;
     }
     
-    .savings-display-large #savingsGoal {
-        font-size: 18px;
+    .amount-display-large {
+        font-size: 20px;
+        padding: 8px 0 3px;
     }
     
-    .month-nav-container #currentMonth {
-        min-width: 100px;
-        font-size: 14px;
+    .budget-display .budget-amount,
+    .spent-display .spent-amount {
+        font-size: 24px;
+    }
+    
+    .month-display-large {
+        font-size: 20px;
+        padding: 8px 0 3px;
+        min-height: 50px;
+    }
+    
+    .month-display-large #currentMonth {
+        font-size: 24px;
+    }
+    
+    .month-nav-container {
+        gap: 20px;
+    }
+    
+    .month-nav {
+        font-size: 18px;
+        padding: 6px 12px;
+    }
+    
+    .month-nav i {
+        font-size: 18px;
     }
     
     /* Hide logo and name completely on mobile */
@@ -1013,8 +1093,25 @@ body {
 }
 
 @media (max-width: 360px) {
-    .budget-amount, .spent-amount {
-        font-size: 16px;
+    .amount-display-large {
+        font-size: 18px;
+    }
+    
+    .budget-display .budget-amount,
+    .spent-display .spent-amount {
+        font-size: 22px;
+    }
+    
+    .month-display-large {
+        font-size: 18px;
+    }
+    
+    .month-display-large #currentMonth {
+        font-size: 22px;
+    }
+    
+    .month-nav-container {
+        gap: 15px;
     }
     
     .footer-btn span {
@@ -1025,20 +1122,11 @@ body {
         min-width: 45px;
     }
     
-    .month-nav-container #currentMonth {
-        min-width: 80px;
-        font-size: 13px;
-    }
-    
     .savings-display-large {
         font-size: 20px;
     }
     
     .savings-display-large #savingsAmount {
         font-size: 22px;
-    }
-    
-    .savings-display-large #savingsGoal {
-        font-size: 16px;
     }
 }

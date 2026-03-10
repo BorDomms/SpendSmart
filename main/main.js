@@ -28,7 +28,6 @@ let savingsTargets = [];
 
 // ===== CONSTANTS =====
 let MONTHLY_BUDGET = 2500;
-const SAVINGS_GOAL = 10000; // Default savings goal
 
 // ===== SUBCATEGORY MAPPING =====
 const subcategoriesByCategory = {
@@ -95,18 +94,8 @@ function updateMonthDisplay() {
 
 // ===== CALCULATE SAVINGS =====
 function calculateSavings() {
-    // Get current month's expenses
-    const monthExpenses = expenses.filter(expense => {
-        const expenseDate = new Date(expense.date);
-        return expenseDate.getMonth() === currentMonth && 
-               expenseDate.getFullYear() === currentYear;
-    });
-    
-    const totalSpent = monthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
-    const savings = MONTHLY_BUDGET - totalSpent;
-    
-    // Return max of 0 or savings (can't have negative savings)
-    return Math.max(0, savings);
+    // Set savings to 0 for now
+    return 0;
 }
 
 // ===== UPDATE SAVINGS TARGETS LIST =====
@@ -211,14 +200,10 @@ function updateDashboard() {
 
     const totalSpent = monthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
     const budgetLeft = MONTHLY_BUDGET - totalSpent;
-    const savings = calculateSavings();
+    const savings = calculateSavings(); // This now returns 0
     const spentPercentage = MONTHLY_BUDGET > 0 ? Math.min(100, (totalSpent / MONTHLY_BUDGET) * 100) : 0;
     const budgetPercentage = MONTHLY_BUDGET > 0 ? Math.min(100, Math.max(0, (budgetLeft / MONTHLY_BUDGET) * 100)) : 0;
     
-    // Savings goal progress
-    const savingsProgress = Math.min(100, (savings / SAVINGS_GOAL) * 100);
-    const savingsRemaining = Math.max(0, SAVINGS_GOAL - savings);
-
     // Update budget amount
     const budgetAmountEl = document.getElementById('budgetAmount');
     if (budgetAmountEl) {
@@ -260,25 +245,26 @@ function updateDashboard() {
         spentBarEl.style.width = `${spentPercentage}%`;
     }
     
-    // Update savings display
+    // Update savings display (set to 0)
     const savingsAmountEl = document.getElementById('savingsAmount');
     if (savingsAmountEl) {
-        savingsAmountEl.textContent = savings.toFixed(2);
+        savingsAmountEl.textContent = '0.00';
     }
     
+    // Update savings progress (set to 0)
     const savingsProgressBarEl = document.getElementById('savingsProgressBar');
     if (savingsProgressBarEl) {
-        savingsProgressBarEl.style.width = `${savingsProgress}%`;
+        savingsProgressBarEl.style.width = '0%';
     }
     
     const savingsProgressTextEl = document.getElementById('savingsProgressText');
     if (savingsProgressTextEl) {
-        savingsProgressTextEl.textContent = `${savingsProgress.toFixed(1)}% of goal`;
+        savingsProgressTextEl.textContent = '0% of goal';
     }
     
     const savingsRemainingEl = document.getElementById('savingsRemaining');
     if (savingsRemainingEl) {
-        savingsRemainingEl.textContent = `₱${savingsRemaining.toFixed(2)} left`;
+        savingsRemainingEl.textContent = '₱0 left';
     }
 
     // Update expenses list
@@ -380,68 +366,41 @@ async function loadSavingsTargets(userId) {
     }
 }
 
-// ===== ADD LOCK ICON TO BUDGET CARD =====
-function addLockIcon() {
-    // Find all cards in the home tab left column
-    const cards = document.querySelectorAll('#homeTab .home-left .card');
-    let budgetCardHeader = null;
-    
-    // Loop through cards to find the one with "Monthly Budget" heading
-    cards.forEach(card => {
-        const heading = card.querySelector('.card-header h2');
-        if (heading && heading.textContent.includes('Monthly Budget')) {
-            budgetCardHeader = card.querySelector('.card-header');
-        }
-    });
-    
-    if (!budgetCardHeader) {
-        console.error('Could not find Monthly Budget card');
-        return;
-    }
-    
-    // Check if lock icon already exists
-    if (budgetCardHeader.querySelector('.lock-icon')) {
-        return;
-    }
-    
-    // Create lock icon
-    const lockIcon = document.createElement('i');
-    lockIcon.className = 'fa-solid fa-lock lock-icon locked';
-    lockIcon.setAttribute('data-locked', 'true');
-    
-    // Add to card header
-    budgetCardHeader.appendChild(lockIcon);
-    
-    // Add event listener
-    lockIcon.addEventListener('click', toggleLock);
-    
-    console.log('Lock icon added to Monthly Budget card');
-}
-
-// ===== TOGGLE LOCK =====
-function toggleLock(event) {
-    const lockIcon = event.currentTarget;
+// ===== LOCK ICON FUNCTIONS =====
+function setupLockIcon() {
+    const lockIcon = document.getElementById('budgetLockIcon');
     const budgetAmount = document.getElementById('budgetAmount');
     
-    if (lockIcon.classList.contains('locked')) {
-        lockIcon.classList.remove('fa-lock', 'locked');
-        lockIcon.classList.add('fa-unlock', 'unlocked');
-        lockIcon.setAttribute('data-locked', 'false');
-        budgetAmount.classList.add('editable');
-        budgetAmount.addEventListener('click', editBudget);
-    } else {
-        lockIcon.classList.remove('fa-unlock', 'unlocked');
-        lockIcon.classList.add('fa-lock', 'locked');
-        lockIcon.setAttribute('data-locked', 'true');
-        budgetAmount.classList.remove('editable');
-        budgetAmount.removeEventListener('click', editBudget);
-    }
+    if (!lockIcon || !budgetAmount) return;
+    
+    // Set initial state
+    lockIcon.setAttribute('data-locked', 'true');
+    lockIcon.classList.add('locked');
+    
+    // Add click handler
+    lockIcon.addEventListener('click', function() {
+        if (this.classList.contains('locked')) {
+            // Unlock
+            this.classList.remove('fa-lock', 'locked');
+            this.classList.add('fa-unlock', 'unlocked');
+            this.setAttribute('data-locked', 'false');
+            budgetAmount.classList.add('editable');
+            budgetAmount.addEventListener('click', editBudget);
+        } else {
+            // Lock
+            this.classList.remove('fa-unlock', 'unlocked');
+            this.classList.add('fa-lock', 'locked');
+            this.setAttribute('data-locked', 'true');
+            budgetAmount.classList.remove('editable');
+            budgetAmount.removeEventListener('click', editBudget);
+        }
+    });
 }
 
 // ===== EDIT BUDGET =====
 async function editBudget() {
     const budgetAmount = document.getElementById('budgetAmount');
-    const lockIcon = document.querySelector('.lock-icon');
+    const lockIcon = document.getElementById('budgetLockIcon');
     
     if (!lockIcon || lockIcon.getAttribute('data-locked') === 'true') return;
     
@@ -454,7 +413,7 @@ async function editBudget() {
     input.className = 'budget-input';
     
     budgetAmount.style.display = 'none';
-    budgetAmount.parentNode.insertBefore(input, budgetAmount.nextSibling);
+    budgetAmount.parentNode.appendChild(input);
     input.focus();
     
     async function finishEditing() {
@@ -487,7 +446,7 @@ async function editBudget() {
         }
         
         input.remove();
-        budgetAmount.style.display = 'inline';
+        budgetAmount.style.display = 'flex';
     }
     
     input.addEventListener('keypress', (e) => {
@@ -909,7 +868,7 @@ async function initializeApp(user) {
         updateDashboard();
         setupEventListeners();
         setupTabNavigation();
-        addLockIcon();
+        setupLockIcon();
         
         // Set up modal close button
         const cancelBtn = document.getElementById('cancelAddExpense');
