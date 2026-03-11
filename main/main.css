@@ -1,10 +1,4 @@
-/*
-font-family: 'Satoshi', sans-serif;
-font-family: 'Supreme', sans-serif;
-font-family: 'Chillax', sans-serif;
-*/
-
-/* ===== RESET STYLES ===== */
+/* ===== RESET & BASE STYLES ===== */
 * {
     margin: 0;
     padding: 0;
@@ -12,7 +6,6 @@ font-family: 'Chillax', sans-serif;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* ===== BODY STYLES ===== */
 body {
     background: #212529;
     min-height: 100vh;
@@ -32,7 +25,7 @@ body {
     padding-bottom: 80px;
 }
 
-/* ===== TAB CONTENT ===== */
+/* ===== TAB CONTENT STYLES ===== */
 .tab-content {
     display: none;
     flex-direction: column;
@@ -63,21 +56,21 @@ body {
     gap: 20px;
 }
 
-/* Half-size cards */
+/* ===== HALF CARD STYLES ===== */
 .half-card {
-    padding: 15px;
+    padding: 12px;
 }
 
 .half-card .progress-container {
-    height: 25px;
+    height: 20px;
     margin: 8px 0;
 }
 
 .half-card .stats-row {
-    font-size: 13px;
+    font-size: 12px;
 }
 
-/* ===== NEW LEFT COLUMN LAYOUT STYLES ===== */
+/* ===== CARD ROW LAYOUT ===== */
 .card-row {
     display: flex;
     gap: 20px;
@@ -86,104 +79,90 @@ body {
 
 .card-row .card {
     flex: 1;
-    min-width: 0; /* Prevents flex items from overflowing */
+    min-width: 0;
 }
 
-/* ===== SAVINGS CARD WITH PROGRESS BAR ===== */
+/* ===== SAVINGS CARD STYLES ===== */
 .savings-display-large {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     color: #edb458;
-    padding: 10px 0 5px;
+    padding: 8px 0 3px;
     text-align: center;
 }
 
 .savings-display-large #savingsAmount {
-    font-size: 28px;
+    font-size: 24px;
 }
 
 .savings-progress {
     height: 20px !important;
-    margin: 10px 0 5px !important;
+    margin: 8px 0 !important;
 }
 
 .savings-bar {
     background: linear-gradient(90deg, #edb458 0%, #f7d44a 100%);
 }
 
-.savings-stats {
-    font-size: 12px;
-    color: #dee2e6;
-    margin-top: 5px;
-}
-
-#savingsRemaining {
-    color: #edb458;
-    font-weight: 600;
-}
-
-/* ===== AMOUNT DISPLAY STYLES (for budget and spent cards) ===== */
+/* ===== AMOUNT DISPLAY STYLES ===== */
 .amount-display-large {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
-    padding: 10px 0 5px;
+    padding: 8px 0 3px;
     text-align: center;
 }
 
 .budget-display .budget-amount {
-    font-size: 28px;
+    font-size: 24px;
     color: #9d4edd;
 }
 
 .spent-display .spent-amount {
-    font-size: 28px;
+    font-size: 24px;
     color: #f56565;
 }
 
-/* ===== MONTH SELECTOR CARD WITH LARGE DATE DISPLAY ===== */
+/* ===== MONTH SELECTOR CARD STYLES ===== */
 .month-display-large {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     color: #f8f9fa;
-    padding: 10px 0 5px;
+    padding: 8px 0 3px;
     text-align: center;
-    min-height: 60px; /* Ensures consistent height with other cards */
+    min-height: 50px;
 }
 
 .month-display-large #currentMonth {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 600;
     color: #f8f9fa;
 }
 
-/* Updated month navigation container */
 .month-nav-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 30px;
-    padding: 10px 0;
-    margin-top: 5px;
+    gap: 20px;
+    padding: 3px 0;
 }
 
-/* Blue clean arrow styles */
 .month-nav {
     background: none;
     border: none;
-    font-size: 20px;
+    font-size: 18px;
     cursor: pointer;
     color: #0466c8;
     font-weight: bold;
-    padding: 8px 16px;
+    padding: 6px 12px;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
@@ -199,15 +178,14 @@ body {
 }
 
 .month-nav i {
-    font-size: 20px;
+    font-size: 18px;
 }
 
-/* Hide the old savings-month-container */
 .savings-month-container {
     display: none;
 }
 
-/* ===== NAVIGATION BAR ===== */
+/* ===== TOP NAVIGATION BAR STYLES ===== */
 .top-nav {
     width: 100%;
     background: #212529;
@@ -224,7 +202,6 @@ body {
     height: 50px;
 }
 
-/* User info on the left */
 .nav-left {
     display: flex;
     align-items: center;
@@ -248,7 +225,6 @@ body {
     position: relative;
 }
 
-/* Show full name always */
 .user-name .full-name {
     display: inline;
 }
@@ -263,7 +239,6 @@ body {
     font-size: 14px;
 }
 
-/* Centered logo and brand */
 .nav-center {
     display: flex;
     align-items: center;
@@ -287,7 +262,6 @@ body {
     font-size: 20px;
 }
 
-/* Logout button on the right */
 .nav-right {
     display: flex;
     align-items: center;
@@ -322,12 +296,12 @@ body {
     font-size: 14px;
 }
 
-/* ===== CARD STYLES ===== */
+/* ===== GENERAL CARD STYLES ===== */
 .card {
     background: #282d31;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     height: fit-content;
 }
 
@@ -335,33 +309,33 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .card h2 {
     font-family: 'Supreme', sans-serif;
     font-weight: 900;
-    font-size: 18px;
+    font-size: 16px;
     color: #f8f9fa;
 }
 
-/* ===== EXPENSE COUNTER ===== */
-.expense-count {
+/* ===== EXPENSE & INCOME COUNTER STYLES ===== */
+.expense-count, .income-count {
     color: #f8f9fa;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 12px;
     background: #343a40;
-    padding: 4px 12px;
+    padding: 3px 10px;
     border-radius: 20px;
 }
 
 /* ===== LOCK ICON STYLES ===== */
 #budgetLockIcon {
-    font-size: 18px;
+    font-size: 16px;
     cursor: pointer;
     transition: all 0.2s ease;
     color: #0466c8;
-    margin-left: 10px;
+    margin-left: 8px;
 }
 
 #budgetLockIcon.unlocked {
@@ -378,7 +352,77 @@ body {
     transform: scale(1.2);
 }
 
-/* Budget amount styles */
+/* ===== BUDGET CARD LOCK ICON STYLES ===== */
+.budget-card-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.budget-lock-icon {
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #0466c8;
+}
+
+.budget-lock-icon.unlocked {
+    color: #c53030;
+}
+
+.budget-lock-icon:hover {
+    color: #4361ee;
+    transform: scale(1.2);
+}
+
+.budget-lock-icon.unlocked:hover {
+    color: #ff5153;
+    transform: scale(1.2);
+}
+
+/* Amount gets underlined when unlocked */
+.budget-amount.editable {
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-decoration-color: #9d4edd;
+    text-underline-offset: 4px;
+    cursor: pointer;
+}
+
+/* Percentage text styling - same as before */
+.budget-percentage {
+    font-family: 'Satoshi', sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    color: #a0aec0;
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    text-decoration: none !important;
+}
+
+/* Input styling - match the total allocated amount font (Satoshi) */
+.budget-amount-input {
+    font-size: 16px;
+    font-weight: 400;
+    color: #a0aec0;
+    border: 2px solid #9d4edd;
+    border-radius: 8px;
+    background: #282d31;
+    padding: 2px 6px;
+    width: 100px;
+    outline: none;
+    text-align: center;
+    font-family: 'Satoshi', sans-serif; /* Changed from Chillax to Satoshi */
+    margin: 0;
+    line-height: 1.2;
+}
+
+.budget-amount-input:focus {
+    border-color: #7b2cbf;
+}
+
+/* ===== BUDGET AMOUNT STYLES ===== */
 .budget-amount {
     font-size: inherit;
     font-weight: inherit;
@@ -395,14 +439,14 @@ body {
 }
 
 .budget-input {
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: bold;
     color: #9d4edd;
     border: 2px solid #9d4edd;
     border-radius: 8px;
     background: #282d31;
     padding: 4px 8px;
-    width: 120px;
+    width: 100px;
     outline: none;
 }
 
@@ -410,14 +454,14 @@ body {
     border-color: #7b2cbf;
 }
 
-/* ===== PROGRESS BARS ===== */
+/* ===== PROGRESS BAR STYLES ===== */
 .progress-container {
     width: 100%;
-    height: 30px;
+    height: 20px;
     background: #343a40;
-    border-radius: 15px;
+    border-radius: 10px;
     overflow: hidden;
-    margin: 10px 0;
+    margin: 8px 0;
 }
 
 .progress-bar {
@@ -437,18 +481,18 @@ body {
     display: flex;
     justify-content: space-between;
     color: #dee2e6;
-    font-size: 14px;
+    font-size: 12px;
     font-family: 'Satoshi', sans-serif;
     font-weight: 400;
 }
 
 .spent-amount {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
     color: #f56565;
 }
 
-/* ===== SAVING GOALS STYLES ===== */
+/* ===== SAVINGS GOALS STYLES ===== */
 .goals-list {
     margin: 15px 0;
     max-height: 300px;
@@ -517,7 +561,7 @@ body {
     font-size: 10px;
 }
 
-/* ===== PLACEHOLDER CARDS ===== */
+/* ===== PLACEHOLDER CARD STYLES ===== */
 .placeholder-card {
     background: linear-gradient(135deg, #282d31 0%, #2d3338 100%);
     border: 2px dashed #4a5568;
@@ -525,12 +569,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
+    transition: none;
+    cursor: default;
 }
 
 .placeholder-card:hover {
-    border-color: #9d4edd;
-    transform: translateY(-2px);
+    border-color: #4a5568;
+    transform: none;
 }
 
 .placeholder-content {
@@ -556,7 +601,19 @@ body {
     font-size: 14px;
 }
 
-/* ===== ADD GOAL CARD ===== */
+.placeholder-card:hover .placeholder-icon {
+    color: #4a5568;
+}
+
+.placeholder-card:hover h3 {
+    color: #f8f9fa;
+}
+
+.placeholder-card:hover p {
+    color: #a0aec0;
+}
+
+/* ===== ADD GOAL CARD STYLES ===== */
 .add-goal-card {
     background: #282d31;
 }
@@ -564,7 +621,7 @@ body {
 .goal-form-compact {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
 }
 
 .goal-form-compact .form-group {
@@ -574,21 +631,21 @@ body {
 .goal-form-compact label {
     display: inline-block;
     background: #0466c8;
-    padding: 2px 12px;
+    padding: 2px 10px;
     border-radius: 30px;
     margin-bottom: 5px;
     color: #e9ecef;
-    font-size: 12px;
+    font-size: 11px;
     font-family: 'Satoshi', sans-serif;
     font-weight: 600;
 }
 
 .goal-form-compact .btn-create {
     width: 100%;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
-/* ===== BOTTOM SHEET MODAL ===== */
+/* ===== MODAL STYLES ===== */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -613,6 +670,7 @@ body {
     transform: translateY(0);
     animation: slideUp 0.3s ease;
     box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+    min-height: 400px; /* Add minimum height to prevent shifting */
 }
 
 .bottom-sheet-handle {
@@ -623,12 +681,74 @@ body {
     margin: 0 auto 20px;
 }
 
-.bottom-sheet-content h2 {
-    color: #f8f9fa;
-    font-family: 'Chillax', sans-serif;
-    font-size: 24px;
+/* ===== TRANSACTION TOGGLE HEADER STYLES ===== */
+.transaction-toggle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
     margin-bottom: 20px;
-    text-align: center;
+    padding: 0 10px;
+    min-height: 60px; /* Add fixed height to prevent movement */
+}
+
+.toggle-option {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+    flex: 0 1 auto;
+    height: 100%; /* Ensure consistent height */
+}
+
+.toggle-option .toggle-text {
+    font-family: 'Supreme', sans-serif; /* Changed from Chillax to Supreme to match home tab headers */
+    font-weight: 900; /* Match home tab header weight */
+    font-size: 24px;
+    transition: all 0.3s ease;
+    line-height: 1.2; /* Add fixed line height */
+}
+
+#expenseToggleBtn .toggle-text {
+    color: #f56565;
+}
+
+#expenseToggleBtn.active .toggle-text {
+    font-size: 28px;
+    color: #f56565;
+    /* Removed text-shadow glow */
+}
+
+#expenseToggleBtn:not(.active) .toggle-text {
+    font-size: 20px;
+    color: #718096;
+    opacity: 0.6;
+}
+
+#incomeToggleBtn .toggle-text {
+    color: #48bb78;
+}
+
+#incomeToggleBtn.active .toggle-text {
+    font-size: 28px;
+    color: #48bb78;
+    /* Removed text-shadow glow */
+}
+
+#incomeToggleBtn:not(.active) .toggle-text {
+    font-size: 20px;
+    color: #718096;
+    opacity: 0.6;
+}
+
+.toggle-option:hover .toggle-text {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+.toggle-option.active:hover .toggle-text {
+    opacity: 1;
 }
 
 @keyframes slideUp {
@@ -643,7 +763,7 @@ body {
 .modal-actions {
     display: flex;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 .modal-actions .btn-cancel,
@@ -652,31 +772,32 @@ body {
 }
 
 /* ===== FORM STYLES ===== */
-.expense-form {
+.expense-form,
+.income-form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
 }
 
 .form-row {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
 .form-group {
     flex: 1;
-    min-width: 200px;
+    min-width: 180px;
 }
 
 .form-group label {
     display: inline-block;
     background: #0466c8;   
-    padding: 2px 15px;
+    padding: 2px 12px;
     border-radius: 30px;
     margin-bottom: 5px;
     color: #e9ecef;
-    font-size: 14px;
+    font-size: 12px;
     font-family: 'Satoshi', sans-serif;
     font-weight: 600;
 }
@@ -684,14 +805,14 @@ body {
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 10px;
+    padding: 8px 10px;
     color: #dee2e6;
     border: 2px solid #343a40;
     background: #343a40;
     border-radius: 8px;
     font-family: 'Supreme', sans-serif;
     font-weight: 300;
-    font-size: 14px;
+    font-size: 13px;
     transition: border-color 0.2s;
 }
 
@@ -701,19 +822,20 @@ body {
     border-color: #0466c8;
 }
 
+/* ===== BUTTON STYLES ===== */
 .btn-add {
     background: #9d4edd;
     color: #f8f9fa;
     border: none;
-    padding: 15px;
+    padding: 12px;
     border-radius: 10px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     transition: transform 0.2s;
 }
 
@@ -724,26 +846,6 @@ body {
 .btn-cancel {
     background: #4a5568;
     color: #e9ecef;
-    border: none;
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: all 0.2s;
-}
-
-.btn-cancel:hover {
-    background: #718096;
-}
-
-.btn-create {
-    background: #9d4edd;
-    color: #f8f9fa;
     border: none;
     padding: 12px;
     border-radius: 10px;
@@ -757,108 +859,304 @@ body {
     transition: all 0.2s;
 }
 
+.btn-cancel:hover {
+    background: #718096;
+}
+
+.btn-create {
+    background: #9d4edd;
+    color: #f8f9fa;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
 .btn-create:hover {
     background: #7b2cbf;
     transform: translateY(-2px);
 }
 
-/* ===== PAYMENT METHOD BADGE ===== */
+/* ===== PAYMENT METHOD BADGE STYLES ===== */
 .payment-method-badge {
-    font-size: 16px;
+    font-size: 14px;
     margin-left: 8px;
     cursor: help;
 }
 
-/* ===== EXPENSES LIST ===== */
-.expenses-list {
-    max-height: 400px;
+/* ===== EXPENSES & INCOMES LIST STYLES ===== */
+.expenses-list, .incomes-list {
+    max-height: 350px;
     overflow-y: auto;
-    margin: 15px 0;
+    margin: 10px 0;
 }
 
-.expense-item {
+.expense-item, .income-item {
     display: flex;
     flex-direction: column;
-    padding: 12px;
-    border-bottom: 3px solid #343a40;
+    padding: 10px;
+    border-bottom: 2px solid #343a40;
     transition: background 0.2s;
 }
 
-.expense-item:hover {
+.expense-item:hover, .income-item:hover {
     background: #343a40;
 }
 
-.expense-row {
+.expense-row, .income-row {
     display: flex;
     align-items: center;
     width: 100%;
 }
 
-.expense-row:first-child {
-    margin-bottom: 5px;
+.expense-row:first-child, .income-row:first-child {
+    margin-bottom: 3px;
 }
 
 .amount-date-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .expense-category {
     font-weight: 600;
     color: #f8f9fa;
     background: #9d4edd;
-    padding: 3px 8px;
-    border-radius: 12px;
+    padding: 2px 6px;
+    border-radius: 10px;
     display: inline-block;
+    font-size: 12px;
+}
+
+.income-category {
+    font-weight: 600;
+    color: #f8f9fa;
+    background: #48bb78;
+    padding: 2px 6px;
+    border-radius: 10px;
+    display: inline-block;
+    font-size: 12px;
 }
 
 .expense-amount {
     font-weight: 600;
     color: #e9ecef;
-    font-size: 16px;
+    font-size: 14px;
 }
 
-.expense-date {
-    color: #dee2e6;
+.income-amount {
+    font-weight: 600;
+    color: #48bb78;
     font-size: 14px;
+}
+
+.income-source {
+    color: #a0aec0;
+    font-size: 11px;
+    margin-left: 6px;
+}
+
+.expense-date, .income-date {
+    color: #dee2e6;
+    font-size: 12px;
     flex: 1;
     text-align: center;
 }
 
-.delete-expense {
+.delete-expense, .delete-income {
     background: none;
     border: none;
     color: #c53030;
     cursor: pointer;
-    font-size: 18px;
-    padding: 5px;
+    font-size: 16px;
+    padding: 4px;
     transition: all 0.2s ease;
 }
 
-.delete-expense:hover {
+.delete-expense:hover, .delete-income:hover {
     color: #f56565;
     transform: scale(1.2);
 }
 
 .empty-state {
     text-align: center;
-    padding: 30px;
+    padding: 20px;
     color: #a0aec0;
+    font-size: 14px;
 }
 
-.expenses-total {
+/* ===== LIST TAB GRID LAYOUT ===== */
+.list-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+}
+
+.list-left,
+.list-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.list-total {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 15px;
+    padding-top: 12px;
     border-top: 2px solid #0466c8;
-    font-size: 18px;
+    font-size: 16px;
     color: #f8f9fa;
 }
 
-/* ===== BOTTOM NAVIGATION FOOTER ===== */
+/* ===== BUDGETS TAB LAYOUT ===== */
+.budgets-top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+}
+
+/* ===== BUDGET CARD STYLES ===== */
+.budget-card {
+    background: #282d31;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: none;
+}
+
+.budget-card:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.budget-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.category-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.category-icon {
+    font-size: 18px;
+}
+
+.budget-card h3 {
+    font-family: 'Supreme', sans-serif;
+    font-weight: 900;
+    font-size: 18px;
+    color: #f8f9fa;
+    margin: 0;
+}
+
+.budget-percentage {
+    font-family: 'Satoshi', sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    color: #a0aec0; /* Dimmer white color */
+    background: none; /* Remove purple background */
+    padding: 0; /* Remove padding */
+    border-radius: 0; /* Remove border radius */
+}
+
+/* Hide percentage on bills category */
+.category-card[data-category="Bills"] .budget-percentage {
+    display: none;
+}
+
+.budget-amount-display {
+    text-align: center;
+    margin: 4px 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.budget-allocated {
+    font-family: 'Chillax', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #f8f9fa;
+}
+
+.category-card .budget-allocated {
+    color: #9d4edd;
+}
+
+/* Remaining amount is purple */
+.budget-amount-display .remaining-part {
+    color: #9d4edd;
+    font-size: 24px;
+}
+
+.budget-amount-display .separator {
+    color: #a0aec0;
+    font-size: 16px;
+    margin: 0 3px;
+}
+
+.budget-amount-display .total-part {
+    color: #a0aec0;
+    font-size: 16px;
+}
+
+.budget-progress {
+    margin: 4px 0;
+}
+
+.budget-progress .progress-container {
+    height: 20px;
+    background: #343a40;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0;
+}
+
+.category-bar {
+    background: linear-gradient(90deg, #7b2cbf 0%, #c77dff 100%);
+}
+
+.savings-bar {
+    background: linear-gradient(90deg, #edb458 0%, #f7d44a 100%);
+}
+
+.remaining-bar {
+    background: linear-gradient(90deg, #48bb78 0%, #68d391 100%);
+}
+
+/* Remove all bottom text from budget cards */
+.budget-stats {
+    display: none;
+}
+
+/* ===== BOTTOM NAVIGATION FOOTER STYLES ===== */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -890,24 +1188,24 @@ body {
     background: none;
     border: none;
     color: #a0aec0;
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 8px 12px;
+    gap: 3px;
+    padding: 6px 10px;
     transition: all 0.2s ease;
     border-radius: 8px;
-    min-width: 60px;
+    min-width: 50px;
 }
 
 .footer-btn i {
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .footer-btn span {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 500;
 }
 
@@ -920,13 +1218,12 @@ body {
     color: #9d4edd;
 }
 
-/* Add button special styling */
 .footer-btn.add-btn {
     background: #9d4edd;
     color: white;
     border-radius: 50%;
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
     padding: 0;
     justify-content: center;
     transform: translateY(-16px);
@@ -935,7 +1232,7 @@ body {
 }
 
 .footer-btn.add-btn i {
-    font-size: 24px;
+    font-size: 22px;
 }
 
 .footer-btn.add-btn span {
@@ -947,7 +1244,14 @@ body {
     transform: translateY(-16px) scale(1.05);
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
+/* ===== RESPONSIVE DESIGN - TABLET ===== */
+@media (max-width: 1024px) {
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ===== RESPONSIVE DESIGN - MOBILE ===== */
 @media (max-width: 768px) {
     .app {
         padding: 10px;
@@ -959,62 +1263,144 @@ body {
         gap: 15px;
     }
     
-    .half-card {
-        padding: 15px;
+    .home-left {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
     }
     
-    .card-row {
-        flex-direction: column;
+    .list-grid {
+        grid-template-columns: 1fr;
         gap: 15px;
     }
     
+    .budgets-top-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .card-row {
+        display: contents;
+    }
+    
+    .half-card {
+        padding: 10px;
+    }
+    
+    .half-card .progress-container {
+        height: 16px;
+        margin: 6px 0;
+    }
+    
     .savings-display-large {
-        padding: 10px 0;
+        padding: 5px 0 2px;
     }
     
     .savings-display-large #savingsAmount {
-        font-size: 24px;
+        font-size: 20px;
+    }
+    
+    .savings-progress {
+        height: 16px !important;
+        margin: 6px 0 !important;
     }
     
     .amount-display-large {
-        font-size: 20px;
-        padding: 8px 0 3px;
+        font-size: 18px;
+        padding: 5px 0 2px;
     }
     
     .budget-display .budget-amount,
     .spent-display .spent-amount {
-        font-size: 24px;
+        font-size: 20px;
     }
     
     .month-display-large {
-        font-size: 20px;
-        padding: 8px 0 3px;
-        min-height: 50px;
+        font-size: 18px;
+        padding: 5px 0 2px;
+        min-height: 40px;
     }
     
     .month-display-large #currentMonth {
-        font-size: 24px;
+        font-size: 20px;
     }
     
     .month-nav-container {
-        gap: 20px;
+        gap: 12px;
+        padding: 2px 0;
     }
     
     .month-nav {
-        font-size: 18px;
-        padding: 6px 12px;
+        font-size: 16px;
+        padding: 4px 8px;
     }
     
     .month-nav i {
+        font-size: 16px;
+    }
+    
+    .progress-container {
+        height: 16px;
+        margin: 6px 0;
+    }
+    
+    .half-card .progress-container {
+        height: 16px;
+    }
+    
+    .stats-row {
+        font-size: 11px;
+    }
+    
+    .toggle-option .toggle-text {
+        font-size: 22px;
+    }
+    
+    #expenseToggleBtn.active .toggle-text,
+    #incomeToggleBtn.active .toggle-text {
+        font-size: 26px;
+    }
+    
+    #expenseToggleBtn:not(.active) .toggle-text,
+    #incomeToggleBtn:not(.active) .toggle-text {
         font-size: 18px;
     }
     
-    /* Hide logo and name completely on mobile */
+    .budget-card {
+        padding: 10px;
+    }
+    
+    .budget-card h3 {
+        font-size: 13px;
+    }
+    
+    .budget-allocated {
+        font-size: 20px;
+    }
+    
+    .budget-amount-display .remaining-part {
+        font-size: 20px;
+    }
+    
+    .budget-amount-display .separator,
+    .budget-amount-display .total-part {
+        font-size: 14px;
+    }
+    
+    .budget-progress .progress-container {
+        height: 16px;
+    }
+    
     .nav-center {
         display: none;
     }
     
-    /* Adjust layout for mobile - only user and logout */
     .nav-container {
         justify-content: space-between;
     }
@@ -1030,103 +1416,237 @@ body {
     
     .user-name {
         max-width: none;
-        font-size: 13px;
-        padding: 4px 12px;
-        white-space: nowrap;
-        overflow: visible;
+        font-size: 12px;
+        padding: 4px 10px;
     }
     
     .logout-btn {
-        padding: 6px 12px;
-        font-size: 12px;
-        gap: 5px;
+        padding: 5px 10px;
+        font-size: 11px;
+        gap: 4px;
+        height: 36px;
     }
     
     .form-row {
         flex-direction: column;
+        gap: 10px;
     }
     
     .form-group {
         min-width: 100%;
     }
     
-    /* Mobile footer adjustments */
     .bottom-nav {
         padding: 0 10px;
     }
     
     .footer-container {
-        padding: 8px 15px;
+        padding: 6px 15px;
         border-radius: 25px 25px 0 0;
     }
     
     .footer-btn {
-        min-width: 50px;
-        padding: 6px 8px;
+        min-width: 45px;
+        padding: 5px 6px;
     }
     
     .footer-btn i {
-        font-size: 18px;
+        font-size: 16px;
     }
     
     .footer-btn.add-btn {
-        width: 52px;
-        height: 52px;
+        width: 48px;
+        height: 48px;
     }
     
     .footer-btn.add-btn i {
-        font-size: 22px;
+        font-size: 20px;
     }
 }
 
+/* ===== RESPONSIVE DESIGN - SMALL MOBILE ===== */
 @media (max-width: 480px) {
-    /* On very small screens, allow name to adjust */
-    .user-name {
-        font-size: 12px;
-        padding: 4px 10px;
+    .home-left {
+        gap: 8px;
     }
     
-    .user-name i {
-        margin-right: 5px;
-        font-size: 12px;
+    .half-card {
+        padding: 8px;
     }
-}
-
-@media (max-width: 360px) {
-    .amount-display-large {
+    
+    .savings-display-large #savingsAmount {
         font-size: 18px;
+    }
+    
+    .savings-progress {
+        height: 14px !important;
     }
     
     .budget-display .budget-amount,
     .spent-display .spent-amount {
-        font-size: 22px;
-    }
-    
-    .month-display-large {
         font-size: 18px;
     }
     
     .month-display-large #currentMonth {
-        font-size: 22px;
+        font-size: 18px;
     }
     
-    .month-nav-container {
-        gap: 15px;
+    .month-nav {
+        font-size: 14px;
+        padding: 3px 6px;
     }
     
-    .footer-btn span {
+    .month-nav i {
+        font-size: 14px;
+    }
+    
+    .progress-container {
+        height: 14px;
+    }
+    
+    .half-card .progress-container {
+        height: 14px;
+    }
+    
+    .stats-row {
         font-size: 10px;
     }
     
-    .footer-btn {
-        min-width: 45px;
-    }
-    
-    .savings-display-large {
+    .toggle-option .toggle-text {
         font-size: 20px;
     }
     
+    #expenseToggleBtn.active .toggle-text,
+    #incomeToggleBtn.active .toggle-text {
+        font-size: 24px;
+    }
+    
+    #expenseToggleBtn:not(.active) .toggle-text,
+    #incomeToggleBtn:not(.active) .toggle-text {
+        font-size: 16px;
+    }
+    
+    .categories-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .budget-card {
+        padding: 8px;
+    }
+    
+    .budget-allocated {
+        font-size: 20px;
+    }
+    
+    .budget-amount-display .remaining-part {
+        font-size: 20px;
+    }
+    
+    .budget-amount-display .separator,
+    .budget-amount-display .total-part {
+        font-size: 14px;
+    }
+    
+    .budget-progress .progress-container {
+        height: 14px;
+    }
+    
+    .user-name {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+    
+    .user-name i {
+        margin-right: 4px;
+        font-size: 11px;
+    }
+}
+
+/* ===== RESPONSIVE DESIGN - EXTRA SMALL MOBILE ===== */
+@media (max-width: 360px) {
+    .home-left {
+        gap: 5px;
+    }
+    
+    .half-card {
+        padding: 6px;
+    }
+    
     .savings-display-large #savingsAmount {
+        font-size: 16px;
+    }
+    
+    .savings-progress {
+        height: 12px !important;
+    }
+    
+    .budget-display .budget-amount,
+    .spent-display .spent-amount {
+        font-size: 16px;
+    }
+    
+    .month-display-large #currentMonth {
+        font-size: 16px;
+    }
+    
+    .month-nav {
+        font-size: 12px;
+        padding: 2px 4px;
+    }
+    
+    .month-nav i {
+        font-size: 12px;
+    }
+    
+    .progress-container {
+        height: 12px;
+    }
+    
+    .half-card .progress-container {
+        height: 12px;
+    }
+    
+    .stats-row {
+        font-size: 9px;
+    }
+    
+    .toggle-option .toggle-text {
+        font-size: 18px;
+    }
+    
+    #expenseToggleBtn.active .toggle-text,
+    #incomeToggleBtn.active .toggle-text {
         font-size: 22px;
+    }
+    
+    #expenseToggleBtn:not(.active) .toggle-text,
+    #incomeToggleBtn:not(.active) .toggle-text {
+        font-size: 14px;
+    }
+    
+    .budget-allocated {
+        font-size: 18px;
+    }
+    
+    .budget-amount-display .remaining-part {
+        font-size: 18px;
+    }
+    
+    .budget-amount-display .separator,
+    .budget-amount-display .total-part {
+        font-size: 12px;
+    }
+    
+    .budget-progress .progress-container {
+        height: 12px;
+    }
+    
+    .footer-btn span {
+        font-size: 9px;
+    }
+    
+    .footer-btn {
+        min-width: 40px;
     }
 }

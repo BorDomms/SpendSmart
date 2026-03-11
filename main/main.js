@@ -1,7 +1,7 @@
 // ===== IMPORT SUPABASE =====
 import { supabase } from '/supabase.js'
 
-// ===== CHECK SESSION IMMEDIATELY =====
+// ===== CHECK SESSION =====
 console.log('Main page loading...');
 
 const { data: { session }, error } = await supabase.auth.getSession();
@@ -16,18 +16,26 @@ if (!session) {
     window.location.href = '/login/login.html';
 } else {
     console.log('Session found for:', session.user.email);
-    // Initialize app immediately
     initializeApp(session.user);
 }
 
-// ===== EXPENSES ARRAY =====
+// ===== GLOBAL VARIABLES =====
 let expenses = [];
-
-// ===== SAVINGS TARGETS ARRAY =====
+let incomes = [];
 let savingsTargets = [];
-
-// ===== CONSTANTS =====
 let MONTHLY_BUDGET = 2500;
+
+// ===== CATEGORY PERCENTAGES =====
+// Bills: 25% of total monthly budget
+// Remaining 75% distributed to other categories:
+const categoryPercentages = {
+    'Food': 35,        // 35% of the remaining 75%
+    'Transport': 20,    // 20% of the remaining 75%
+    'Shopping': 20,     // 20% of the remaining 75%
+    'Entertainment': 15, // 15% of the remaining 75%
+    'Bills': 25,        // 25% of TOTAL budget (not of remaining)
+    'Other': 10         // 10% of the remaining 75%
+};
 
 // ===== SUBCATEGORY MAPPING =====
 const subcategoriesByCategory = {
@@ -48,7 +56,7 @@ const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-// ===== STATE =====
+// ===== STATE VARIABLES =====
 let currentTab = 'home';
 let isModalOpen = false;
 
@@ -60,7 +68,12 @@ function getCategoryEmoji(category) {
         'Shopping': '🛒',
         'Entertainment': '🎬', 
         'Bills': '💡', 
-        'Other': '📦'
+        'Other': '📦',
+        'Salary': '💰',
+        'Freelance': '💻',
+        'Investment': '📈',
+        'Gift': '🎁',
+        'Refund': '↩️'
     };
     return emojis[category] || '📌';
 }
@@ -69,7 +82,7 @@ function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('en-GB');
 }
 
-// ===== SET MONTH FROM LATEST EXPENSE =====
+// ===== MONTH NAVIGATION =====
 function setMonthFromLatestExpense() {
     if (expenses.length > 0) {
         const sortedExpenses = [...expenses].sort((a, b) => 
@@ -84,7 +97,6 @@ function setMonthFromLatestExpense() {
     }
 }
 
-// ===== UPDATE MONTH DISPLAY =====
 function updateMonthDisplay() {
     const currentMonthEl = document.getElementById('currentMonth');
     if (currentMonthEl) {
@@ -92,13 +104,212 @@ function updateMonthDisplay() {
     }
 }
 
-// ===== CALCULATE SAVINGS =====
+// ===== SAVINGS CALCULATION =====
 function calculateSavings() {
-    // Set savings to 0 for now
     return 0;
 }
 
-// ===== UPDATE SAVINGS TARGETS LIST =====
+// ===== CATEGORY SPENDING TRACKING =====
+function calculateCategorySpending() {
+    const monthExpenses = expenses.filter(expense => {
+        const expenseDate = new Date(expense.date);
+        return expenseDate.getMonth() === currentMonth && 
+               expenseDate.getFullYear() === currentYear;
+    });
+    
+    const categorySpending = {
+        'Food': 0,
+        'Transport': 0,
+        'Shopping': 0,
+        'Entertainment': 0,
+        'Bills': 0,
+        'Other': 0
+    };
+    
+    monthExpenses.forEach(expense => {
+        if (categorySpending.hasOwnProperty(expense.category)) {
+            categorySpending[expense.category] += expense.amount;
+        }
+    });
+    
+    return categorySpending;
+}
+
+// ===== CATEGORY CARD UPDATE =====
+function updateCategoryCard(category, budget, spent) {
+    const amountEl = document.getElementById(`${category.toLowerCase()}Amount`);
+    const progressEl = document.getElementById(`${category.toLowerCase()}Progress`);
+    const lockIcon = document.querySelector(`.budget-lock-icon[data-category="${category}"]`);
+    
+    const remaining = budget - spent;
+    const progressPercent = budget > 0 ? (spent / budget) * 100 : 0;
+    
+    // Create the full HTML with remaining and total
+    const fullHtml = `<span class="remaining-part">₱${Math.max(remaining, 0).toFixed(0)}</span><span class="separator">/</span><span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱${budget.toFixed(0)}</span>`;
+    
+    // Update amount display
+    if (amountEl) {
+        // Store the full HTML as data attribute
+        amountEl.setAttribute('data-original-html', fullHtml);
+        
+        // Check if the card is unlocked
+        if (lockIcon && lockIcon.getAttribute('data-locked') === 'false') {
+            // If unlocked, show only the total part with Satoshi font
+            amountEl.innerHTML = `<span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱${budget.toFixed(0)}</span>`;
+        } else {
+            // If locked, show the full display
+            amountEl.innerHTML = fullHtml;
+        }
+    }
+    
+    // Update progress bar
+    if (progressEl) {
+        progressEl.style.width = `${Math.min(progressPercent, 100)}%`;
+    }
+    
+    // Change progress bar color if over budget
+    if (progressEl && spent > budget) {
+        progressEl.style.background = 'linear-gradient(90deg, #c53030 0%, #f56565 100%)';
+    } else if (progressEl) {
+        progressEl.style.background = 'linear-gradient(90deg, #7b2cbf 0%, #c77dff 100%)';
+    }
+}
+
+// ===== LOAD BUDGET ALLOCATIONS FROM SUPABASE =====
+async function loadBudgetAllocations(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('budget_allocations')
+            .select('*')
+            .eq('user_id', userId);
+        
+        if (error && error.code !== 'PGRST116') throw error;
+        
+        if (data && data.length > 0) {
+            // Update categoryPercentages with saved values
+            data.forEach(allocation => {
+                if (categoryPercentages.hasOwnProperty(allocation.category)) {
+                    categoryPercentages[allocation.category] = allocation.percentage;
+                }
+            });
+            console.log('Loaded budget allocations from database:', categoryPercentages);
+        }
+    } catch (error) {
+        console.error('Error loading budget allocations:', error);
+    }
+}
+
+// ===== SAVE BUDGET ALLOCATIONS TO SUPABASE =====
+async function saveBudgetAllocations(userId) {
+    try {
+        // Convert categoryPercentages object to array for upsert
+        const allocations = Object.entries(categoryPercentages).map(([category, percentage]) => ({
+            user_id: userId,
+            category,
+            percentage,
+            updated_at: new Date().toISOString()
+        }));
+        
+        // Upsert (insert or update) each allocation
+        for (const allocation of allocations) {
+            const { error } = await supabase
+                .from('budget_allocations')
+                .upsert(allocation, { 
+                    onConflict: 'user_id, category'
+                });
+            
+            if (error) throw error;
+        }
+        
+        console.log('Budget allocations saved to database');
+    } catch (error) {
+        console.error('Error saving budget allocations:', error);
+    }
+}
+
+// ===== CATEGORY BUDGETS UPDATE =====
+function updateCategoryBudgets() {
+    console.log('===== UPDATING CATEGORY BUDGETS =====');
+    console.log('MONTHLY_BUDGET value:', MONTHLY_BUDGET);
+    
+    const monthlyBudget = MONTHLY_BUDGET;
+    
+    // Check if monthlyBudget is valid
+    if (!monthlyBudget || monthlyBudget <= 0) {
+        console.error('Invalid MONTHLY_BUDGET:', monthlyBudget);
+        return;
+    }
+    
+    const categorySpending = calculateCategorySpending();
+    
+    // Bills gets 25% of total budget directly
+    const billsBudget = (categoryPercentages.Bills / 100) * monthlyBudget;
+    
+    // Remaining 75% goes to other categories
+    const remainingBudget = monthlyBudget - billsBudget;
+    
+    // Distribute remaining budget according to percentages
+    const foodBudget = (categoryPercentages.Food / 100) * remainingBudget;
+    const transportBudget = (categoryPercentages.Transport / 100) * remainingBudget;
+    const shoppingBudget = (categoryPercentages.Shopping / 100) * remainingBudget;
+    const entertainmentBudget = (categoryPercentages.Entertainment / 100) * remainingBudget;
+    const otherBudget = (categoryPercentages.Other / 100) * remainingBudget;
+    
+    console.log('Category budgets calculated:', {
+        foodBudget: foodBudget.toFixed(0),
+        transportBudget: transportBudget.toFixed(0),
+        shoppingBudget: shoppingBudget.toFixed(0),
+        entertainmentBudget: entertainmentBudget.toFixed(0),
+        billsBudget: billsBudget.toFixed(0),
+        otherBudget: otherBudget.toFixed(0)
+    });
+    
+    // Update all category cards
+    updateCategoryCard('Food', foodBudget, categorySpending.Food || 0);
+    updateCategoryCard('Transport', transportBudget, categorySpending.Transport || 0);
+    updateCategoryCard('Shopping', shoppingBudget, categorySpending.Shopping || 0);
+    updateCategoryCard('Entertainment', entertainmentBudget, categorySpending.Entertainment || 0);
+    updateCategoryCard('Bills', billsBudget, categorySpending.Bills || 0);
+    updateCategoryCard('Other', otherBudget, categorySpending.Other || 0);
+    
+    // Update Savings card (showing 0 for now)
+    const savingsAmountEl = document.getElementById('savingsAllocationAmount');
+    const savingsPercentageEl = document.getElementById('savingsAllocationPercentage');
+    const savingsProgressEl = document.getElementById('savingsAllocationProgress');
+    
+    if (savingsAmountEl) {
+        savingsAmountEl.innerHTML = `<span class="remaining-part">₱0</span><span class="separator">/</span><span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱0</span>`;
+    }
+    if (savingsPercentageEl) {
+        savingsPercentageEl.textContent = `0%`;
+    }
+    if (savingsProgressEl) {
+        savingsProgressEl.style.width = `0%`;
+    }
+    
+    // Update Remaining card
+    const remainingAmountEl = document.getElementById('remainingAmount');
+    const remainingPercentageEl = document.getElementById('remainingPercentage');
+    const remainingProgressEl = document.getElementById('remainingProgress');
+    
+    const totalAllocated = foodBudget + transportBudget + shoppingBudget + 
+                          entertainmentBudget + billsBudget + otherBudget;
+    const unallocated = monthlyBudget - totalAllocated;
+    
+    if (remainingAmountEl) {
+        remainingAmountEl.innerHTML = `<span class="remaining-part">₱${unallocated.toFixed(0)}</span><span class="separator">/</span><span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱${monthlyBudget.toFixed(0)}</span>`;
+    }
+    if (remainingPercentageEl) {
+        const remainingPercent = (unallocated / monthlyBudget) * 100;
+        remainingPercentageEl.textContent = `${remainingPercent.toFixed(1)}%`;
+    }
+    if (remainingProgressEl) {
+        const remainingProgress = (unallocated / monthlyBudget) * 100;
+        remainingProgressEl.style.width = `${remainingProgress}%`;
+    }
+}
+
+// ===== SAVINGS TARGETS LIST UPDATE =====
 function updateSavingsTargetsList() {
     const goalsList = document.getElementById('goalsList');
     if (!goalsList) return;
@@ -138,7 +349,7 @@ function updateSavingsTargetsList() {
     `}).join('');
 }
 
-// ===== UPDATE EXPENSES LIST =====
+// ===== EXPENSES LIST UPDATE =====
 function updateExpensesList(monthExpenses) {
     const expensesList = document.getElementById('expensesList');
     if (!expensesList) return;
@@ -190,7 +401,63 @@ function updateExpensesList(monthExpenses) {
     `}).join('');
 }
 
-// ===== UPDATE DASHBOARD =====
+// ===== INCOMES HELPERS =====
+function getMonthIncomes() {
+    return incomes.filter(income => {
+        const incomeDate = new Date(income.date);
+        return incomeDate.getMonth() === currentMonth && 
+               incomeDate.getFullYear() === currentYear;
+    });
+}
+
+// ===== INCOMES LIST UPDATE =====
+function updateIncomesList(monthIncomes) {
+    const incomesList = document.getElementById('incomesList');
+    if (!incomesList) return;
+    
+    if (monthIncomes.length === 0) {
+        incomesList.innerHTML = `
+            <div class="empty-state">
+                <p>No incomes yet for ${monthNames[currentMonth]}!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const sortedIncomes = [...monthIncomes].sort((a, b) => 
+        new Date(b.date) - new Date(a.date)
+    );
+    
+    incomesList.innerHTML = sortedIncomes.map(income => {
+        const paymentEmoji = {
+            'Cash': '💵',
+            'Bank Transfer': '🏦',
+            'E-Wallet': '📱',
+            'Check': '📝',
+            'Other': '📦'
+        }[income.payment_method] || '💰';
+        
+        return `
+        <div class="income-item" data-id="${income.id}">
+            <div class="income-row">
+                <span class="income-category">
+                    ${getCategoryEmoji(income.category)} ${income.category}
+                </span>
+                <span class="income-source">${income.source ? `📌 ${income.source}` : ''}</span>
+            </div>
+            <div class="income-row amount-date-row">
+                <span class="income-amount">₱${income.amount.toFixed(2)}</span>
+                <span class="income-date">${formatDate(income.date)}</span>
+                <span class="payment-method-badge" title="${income.payment_method}">
+                    ${paymentEmoji}
+                </span>
+                <button class="delete-income" onclick="deleteIncome(${income.id})">✕</button>
+            </div>
+        </div>
+    `}).join('');
+}
+
+// ===== MAIN DASHBOARD UPDATE =====
 function updateDashboard() {
     const monthExpenses = expenses.filter(expense => {
         const expenseDate = new Date(expense.date);
@@ -198,43 +465,39 @@ function updateDashboard() {
                expenseDate.getFullYear() === currentYear;
     });
 
+    const monthIncomes = getMonthIncomes();
+
     const totalSpent = monthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+    const totalIncome = monthIncomes.reduce((sum, income) => sum + parseFloat(income.amount), 0);
     const budgetLeft = MONTHLY_BUDGET - totalSpent;
-    const savings = calculateSavings(); // This now returns 0
     const spentPercentage = MONTHLY_BUDGET > 0 ? Math.min(100, (totalSpent / MONTHLY_BUDGET) * 100) : 0;
     const budgetPercentage = MONTHLY_BUDGET > 0 ? Math.min(100, Math.max(0, (budgetLeft / MONTHLY_BUDGET) * 100)) : 0;
-    
-    // Update budget amount
+
     const budgetAmountEl = document.getElementById('budgetAmount');
     if (budgetAmountEl) {
         budgetAmountEl.textContent = MONTHLY_BUDGET.toFixed(2);
     }
     
-    // Update spent amount
     const spentAmountEl = document.getElementById('spentAmount');
     if (spentAmountEl) {
         spentAmountEl.textContent = totalSpent.toFixed(2);
     }
     
-    // Update budget left
     const budgetLeftEl = document.getElementById('budgetLeft');
     if (budgetLeftEl) {
         budgetLeftEl.textContent = `${budgetLeft.toFixed(2)} left`;
     }
     
-    // Update budget percentage
     const budgetPercentageEl = document.getElementById('budgetPercentage');
     if (budgetPercentageEl) {
         budgetPercentageEl.textContent = `${budgetPercentage.toFixed(1)}% remaining`;
     }
     
-    // Update spent percentage
     const spentPercentageEl = document.getElementById('spentPercentage');
     if (spentPercentageEl) {
         spentPercentageEl.textContent = `${spentPercentage.toFixed(1)}% of budget used`;
     }
     
-    // Update progress bars
     const budgetBarEl = document.getElementById('budgetBar');
     if (budgetBarEl) {
         budgetBarEl.style.width = `${budgetPercentage}%`;
@@ -245,13 +508,11 @@ function updateDashboard() {
         spentBarEl.style.width = `${spentPercentage}%`;
     }
     
-    // Update savings display (set to 0)
     const savingsAmountEl = document.getElementById('savingsAmount');
     if (savingsAmountEl) {
         savingsAmountEl.textContent = '0.00';
     }
     
-    // Update savings progress (set to 0)
     const savingsProgressBarEl = document.getElementById('savingsProgressBar');
     if (savingsProgressBarEl) {
         savingsProgressBarEl.style.width = '0%';
@@ -267,26 +528,33 @@ function updateDashboard() {
         savingsRemainingEl.textContent = '₱0 left';
     }
 
-    // Update expenses list
     updateExpensesList(monthExpenses);
-    
-    // Update savings targets
+    updateIncomesList(monthIncomes);
     updateSavingsTargetsList();
+    updateCategoryBudgets();
     
-    // Update monthly total
-    const monthlyTotalEl = document.getElementById('monthlyTotal');
-    if (monthlyTotalEl) {
-        monthlyTotalEl.textContent = totalSpent.toFixed(2);
+    const monthlyExpenseTotalEl = document.getElementById('monthlyExpenseTotal');
+    if (monthlyExpenseTotalEl) {
+        monthlyExpenseTotalEl.textContent = totalSpent.toFixed(2);
     }
     
-    // Update expense count
+    const monthlyIncomeTotalEl = document.getElementById('monthlyIncomeTotal');
+    if (monthlyIncomeTotalEl) {
+        monthlyIncomeTotalEl.textContent = totalIncome.toFixed(2);
+    }
+    
     const expenseCountEl = document.getElementById('expenseCount');
     if (expenseCountEl) {
         expenseCountEl.textContent = `${monthExpenses.length} item${monthExpenses.length !== 1 ? 's' : ''}`;
     }
+    
+    const incomeCountEl = document.getElementById('incomeCount');
+    if (incomeCountEl) {
+        incomeCountEl.textContent = `${monthIncomes.length} item${monthIncomes.length !== 1 ? 's' : ''}`;
+    }
 }
 
-// ===== LOAD BUDGET FROM SUPABASE =====
+// ===== LOAD DATA FROM SUPABASE =====
 async function loadBudget(userId) {
     try {
         const { data, error } = await supabase
@@ -296,7 +564,6 @@ async function loadBudget(userId) {
             .single();
         
         if (error && error.code === 'PGRST116') {
-            // No profile found, create one
             const { error: insertError } = await supabase
                 .from('profiles')
                 .insert([{ 
@@ -312,12 +579,12 @@ async function loadBudget(userId) {
         } else if (data) {
             MONTHLY_BUDGET = parseFloat(data.monthly_budget);
         }
+        console.log('Monthly budget loaded:', MONTHLY_BUDGET);
     } catch (error) {
         console.error('Error loading budget:', error);
     }
 }
 
-// ===== LOAD EXPENSES FROM SUPABASE =====
 async function loadExpenses(userId) {
     try {
         const { data, error } = await supabase
@@ -341,7 +608,29 @@ async function loadExpenses(userId) {
     }
 }
 
-// ===== LOAD SAVINGS TARGETS FROM SUPABASE =====
+async function loadIncomes(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('incomes')
+            .select('*')
+            .eq('user_id', userId)
+            .order('date', { ascending: false });
+        
+        if (error) throw error;
+        
+        incomes = data.map(income => ({
+            id: income.id,
+            amount: parseFloat(income.amount),
+            category: income.category,
+            source: income.source || null,
+            payment_method: income.payment_method,
+            date: income.date
+        }));
+    } catch (error) {
+        console.error('Error loading incomes:', error);
+    }
+}
+
 async function loadSavingsTargets(userId) {
     try {
         const { data, error } = await supabase
@@ -373,21 +662,17 @@ function setupLockIcon() {
     
     if (!lockIcon || !budgetAmount) return;
     
-    // Set initial state
     lockIcon.setAttribute('data-locked', 'true');
     lockIcon.classList.add('locked');
     
-    // Add click handler
     lockIcon.addEventListener('click', function() {
         if (this.classList.contains('locked')) {
-            // Unlock
             this.classList.remove('fa-lock', 'locked');
             this.classList.add('fa-unlock', 'unlocked');
             this.setAttribute('data-locked', 'false');
             budgetAmount.classList.add('editable');
             budgetAmount.addEventListener('click', editBudget);
         } else {
-            // Lock
             this.classList.remove('fa-unlock', 'unlocked');
             this.classList.add('fa-lock', 'locked');
             this.setAttribute('data-locked', 'true');
@@ -456,7 +741,248 @@ async function editBudget() {
     input.addEventListener('blur', finishEditing);
 }
 
-// ===== CREATE NEW SAVINGS TARGET (COMPACT) =====
+// ===== BUDGET CARD LOCK ICON SETUP =====
+function setupBudgetCardLocks() {
+    const lockIcons = document.querySelectorAll('.budget-lock-icon');
+    
+    lockIcons.forEach(lockIcon => {
+        // Remove any existing event listeners
+        const newLockIcon = lockIcon.cloneNode(true);
+        lockIcon.parentNode.replaceChild(newLockIcon, lockIcon);
+        
+        newLockIcon.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleBudgetCardLock(this);
+        });
+    });
+}
+
+// ===== TOGGLE BUDGET CARD LOCK =====
+function toggleBudgetCardLock(lockIcon) {
+    const category = lockIcon.dataset.category;
+    const amountEl = document.getElementById(`${category.toLowerCase()}Amount`);
+    const percentageEl = document.getElementById(`${category.toLowerCase()}Percentage`);
+    
+    if (!amountEl) return;
+    
+    if (lockIcon.classList.contains('locked')) {
+        // Unlock
+        lockIcon.classList.remove('fa-lock', 'locked');
+        lockIcon.classList.add('fa-unlock', 'unlocked');
+        lockIcon.setAttribute('data-locked', 'false');
+        
+        // Store the original HTML to restore later
+        amountEl.setAttribute('data-original-html', amountEl.innerHTML);
+        
+        // Extract just the total allocation amount
+        const amountHTML = amountEl.innerHTML;
+        const match = amountHTML.match(/<span class="total-part"[^>]*>(₱\d+)<\/span>/);
+        if (match) {
+            // Replace with just the total allocation amount, keeping the same font style
+            amountEl.innerHTML = `<span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">${match[1]}</span>`;
+        } else {
+            // Fallback if pattern doesn't match
+            const textMatch = amountHTML.match(/₱(\d+)/);
+            if (textMatch) {
+                amountEl.innerHTML = `<span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱${textMatch[1]}</span>`;
+            }
+        }
+        
+        // Remove any existing click handler before adding new one
+        if (amountEl._clickHandler) {
+            amountEl.removeEventListener('click', amountEl._clickHandler);
+        }
+        
+        // Define the click handler for amount only
+        const amountClickHandler = function() {
+            editBudgetCardAmount(category);
+        };
+        
+        // Store the handler on the element for later removal
+        amountEl._clickHandler = amountClickHandler;
+        amountEl.addEventListener('click', amountClickHandler);
+        
+        // Percentage is NOT editable - remove any existing classes
+        if (percentageEl) {
+            percentageEl.classList.remove('editable');
+        }
+        
+        console.log(`Card unlocked for category: ${category}`);
+    } else {
+        // Lock
+        lockIcon.classList.remove('fa-unlock', 'unlocked');
+        lockIcon.classList.add('fa-lock', 'locked');
+        lockIcon.setAttribute('data-locked', 'true');
+        
+        // Restore original HTML with remaining amount
+        const originalHtml = amountEl.getAttribute('data-original-html');
+        if (originalHtml) {
+            amountEl.innerHTML = originalHtml;
+        }
+        
+        if (amountEl._clickHandler) {
+            amountEl.removeEventListener('click', amountEl._clickHandler);
+            delete amountEl._clickHandler;
+        }
+        
+        console.log(`Card locked for category: ${category}`);
+    }
+}
+
+// ===== EDIT BUDGET CARD AMOUNT =====
+function editBudgetCardAmount(category) {
+    console.log(`Editing total allocation for category: ${category}`);
+    
+    const amountEl = document.getElementById(`${category.toLowerCase()}Amount`);
+    const lockIcon = document.querySelector(`.budget-lock-icon[data-category="${category}"]`);
+    
+    if (!lockIcon || lockIcon.getAttribute('data-locked') === 'true') {
+        console.log('Cannot edit - card is locked');
+        return;
+    }
+    
+    // Get current total allocation (now just the plain number)
+    let currentTotalAllocation = 0;
+    const amountText = amountEl.textContent || amountEl.innerText;
+    const match = amountText.match(/₱?(\d+(?:\.\d+)?)/);
+    if (match) {
+        currentTotalAllocation = parseFloat(match[1]);
+    }
+    console.log('Current total allocation:', currentTotalAllocation);
+    
+    // Create input element with Satoshi font
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.value = currentTotalAllocation;
+    input.step = 'any';
+    input.min = '0';
+    input.className = 'budget-amount-input';
+    input.style.fontFamily = "'Satoshi', sans-serif";
+    input.style.fontWeight = '400';
+    input.style.fontSize = '16px';
+    input.style.color = '#a0aec0';
+    input.style.width = '100px';
+    
+    // Hide the original amount display
+    amountEl.style.display = 'none';
+    amountEl.parentNode.appendChild(input);
+    input.focus();
+    input.select();
+    
+    let editingCancelled = false;
+    
+    function finishEditing(saveChanges = true) {
+        if (editingCancelled) return;
+        editingCancelled = true;
+        
+        if (saveChanges) {
+            const newTotalAllocation = parseFloat(input.value);
+            console.log('New total allocation:', newTotalAllocation);
+            
+            if (!isNaN(newTotalAllocation) && newTotalAllocation >= 0 && newTotalAllocation !== currentTotalAllocation) {
+                // Update the category percentage based on new total allocation
+                updateCategoryPercentageFromTotalAllocation(category, newTotalAllocation);
+                
+                // After updateCategoryBudgets runs, we need to update the displayed total
+                // But we also need to maintain the unlocked state showing only total with correct font
+                setTimeout(() => {
+                    // Get the updated amount element
+                    const updatedAmountEl = document.getElementById(`${category.toLowerCase()}Amount`);
+                    if (updatedAmountEl && lockIcon.getAttribute('data-locked') === 'false') {
+                        // Store new original HTML
+                        const updatedHTML = updatedAmountEl.innerHTML;
+                        updatedAmountEl.setAttribute('data-original-html', updatedHTML);
+                        
+                        // Extract just the new total allocation and apply correct font
+                        const newMatch = updatedHTML.match(/<span class="total-part"[^>]*>(₱\d+)<\/span>/);
+                        if (newMatch) {
+                            updatedAmountEl.innerHTML = `<span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">${newMatch[1]}</span>`;
+                        } else {
+                            // Fallback
+                            const textMatch = updatedHTML.match(/₱(\d+)/);
+                            if (textMatch) {
+                                updatedAmountEl.innerHTML = `<span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱${textMatch[1]}</span>`;
+                            }
+                        }
+                    }
+                }, 100);
+            } else {
+                // If no changes, restore the total display with correct font
+                setTimeout(() => {
+                    const updatedAmountEl = document.getElementById(`${category.toLowerCase()}Amount`);
+                    if (updatedAmountEl && lockIcon.getAttribute('data-locked') === 'false') {
+                        const currentHTML = updatedAmountEl.innerHTML;
+                        const totalMatch = currentHTML.match(/₱(\d+)/);
+                        if (totalMatch) {
+                            updatedAmountEl.innerHTML = `<span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱${totalMatch[1]}</span>`;
+                        }
+                    }
+                }, 100);
+            }
+        }
+        
+        // Remove input and show original element
+        input.remove();
+        amountEl.style.display = 'block';
+    }
+    
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            finishEditing(true);
+        }
+    });
+    
+    input.addEventListener('blur', () => {
+        finishEditing(true);
+    });
+    
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            finishEditing(false);
+        }
+    });
+}
+
+// ===== HELPER: UPDATE CATEGORY PERCENTAGE FROM TOTAL ALLOCATION =====
+async function updateCategoryPercentageFromTotalAllocation(category, newTotalAllocation) {
+    console.log(`Updating percentage for ${category} from total allocation: ${newTotalAllocation}`);
+    
+    const monthlyBudget = MONTHLY_BUDGET;
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+        alert('Please log in again');
+        window.location.href = '/login/login.html';
+        return;
+    }
+    
+    if (category === 'Bills') {
+        // Bills is percentage of total
+        const newPercentage = (newTotalAllocation / monthlyBudget) * 100;
+        categoryPercentages.Bills = Math.min(100, Math.max(0, newPercentage));
+        console.log(`New Bills percentage: ${categoryPercentages.Bills}%`);
+    } else {
+        // Other categories are from the remaining after Bills
+        const billsBudget = (categoryPercentages.Bills / 100) * monthlyBudget;
+        const remainingBudget = monthlyBudget - billsBudget;
+        
+        if (remainingBudget > 0) {
+            const newPercentage = (newTotalAllocation / remainingBudget) * 100;
+            categoryPercentages[category] = Math.min(100, Math.max(0, newPercentage));
+            console.log(`New ${category} percentage: ${categoryPercentages[category]}%`);
+        }
+    }
+    
+    // Save the updated allocations to database
+    await saveBudgetAllocations(session.user.id);
+    
+    // Recalculate all budgets
+    updateCategoryBudgets();
+}
+
+// ===== CREATE NEW SAVINGS TARGET =====
 async function createNewGoalCompact() {
     const goalTo = document.getElementById('goalToCompact');
     const goalFrom = document.getElementById('goalFromCompact');
@@ -468,7 +994,6 @@ async function createNewGoalCompact() {
     const goalFromValue = goalFrom.value;
     const goalAmountValue = goalAmount.value;
     
-    // Validation
     if (!goalToValue || !goalFromValue || !goalAmountValue) {
         alert('Please fill in all fields');
         return;
@@ -487,7 +1012,6 @@ async function createNewGoalCompact() {
         return;
     }
     
-    // Prepare the data object
     const newTarget = {
         user_id: session.user.id,
         name: `${goalToValue} (from ${goalFromValue})`,
@@ -515,7 +1039,6 @@ async function createNewGoalCompact() {
             source: goalFromValue
         });
         
-        // Clear form
         goalTo.value = '';
         goalFrom.value = '';
         goalAmount.value = '';
@@ -530,25 +1053,26 @@ async function createNewGoalCompact() {
 
 // ===== SETUP EVENT LISTENERS =====
 function setupEventListeners() {
-    // Expense form
     const expenseForm = document.getElementById('expenseForm');
     if (expenseForm) {
         expenseForm.addEventListener('submit', addExpense);
     }
     
-    // Category select
-    const categorySelect = document.getElementById('category');
-    if (categorySelect) {
-        categorySelect.addEventListener('change', updateSubcategoryDropdown);
+    const incomeForm = document.getElementById('incomeForm');
+    if (incomeForm) {
+        incomeForm.addEventListener('submit', addIncome);
     }
     
-    // Create goal button
+    const expenseCategory = document.getElementById('expenseCategory');
+    if (expenseCategory) {
+        expenseCategory.addEventListener('change', updateExpenseSubcategoryDropdown);
+    }
+    
     const createGoalBtn = document.getElementById('createGoalCompactBtn');
     if (createGoalBtn) {
         createGoalBtn.addEventListener('click', createNewGoalCompact);
     }
     
-    // Month navigation
     const prevMonthBtn = document.getElementById('prevMonth');
     if (prevMonthBtn) {
         prevMonthBtn.addEventListener('click', () => {
@@ -579,9 +1103,9 @@ function setupEventListeners() {
 }
 
 // ===== UPDATE SUBCATEGORY DROPDOWN =====
-function updateSubcategoryDropdown() {
-    const categorySelect = document.getElementById('category');
-    const subcategorySelect = document.getElementById('subcategory');
+function updateExpenseSubcategoryDropdown() {
+    const categorySelect = document.getElementById('expenseCategory');
+    const subcategorySelect = document.getElementById('expenseSubcategory');
     
     if (!categorySelect || !subcategorySelect) return;
     
@@ -616,7 +1140,7 @@ function updateSubcategoryDropdown() {
     }
 }
 
-// ===== ADD NEW EXPENSE =====
+// ===== ADD EXPENSE =====
 async function addExpense(event) {
     event.preventDefault();
     
@@ -627,11 +1151,11 @@ async function addExpense(event) {
         return;
     }
     
-    const amountInput = document.getElementById('amount');
-    const categorySelect = document.getElementById('category');
-    const subcategorySelect = document.getElementById('subcategory');
-    const paymentMethodSelect = document.getElementById('paymentMethod');
-    const dateInput = document.getElementById('date');
+    const amountInput = document.getElementById('expenseAmount');
+    const categorySelect = document.getElementById('expenseCategory');
+    const subcategorySelect = document.getElementById('expenseSubcategory');
+    const paymentMethodSelect = document.getElementById('expensePaymentMethod');
+    const dateInput = document.getElementById('expenseDate');
     
     if (!amountInput || !categorySelect || !paymentMethodSelect || !dateInput) return;
     
@@ -669,24 +1193,85 @@ async function addExpense(event) {
         
         expenses.push(data[0]);
         
-        // Reset form
         document.getElementById('expenseForm').reset();
-        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
         
-        // Reset subcategory dropdown
-        const subcatSelect = document.getElementById('subcategory');
+        const subcatSelect = document.getElementById('expenseSubcategory');
         if (subcatSelect) {
             subcatSelect.disabled = true;
             subcatSelect.innerHTML = '<option value="" disabled selected>Select category first</option>';
         }
         
-        // Close modal
-        closeAddExpenseModal();
-        
+        closeAddTransactionModal();
         updateDashboard();
     } catch (error) {
         console.error('Error adding expense:', error);
         alert('Failed to add expense');
+    }
+}
+
+// ===== ADD INCOME =====
+async function addIncome(event) {
+    event.preventDefault();
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        alert('Please log in again');
+        window.location.href = '/login/login.html';
+        return;
+    }
+    
+    const amountInput = document.getElementById('incomeAmount');
+    const categorySelect = document.getElementById('incomeCategory');
+    const sourceInput = document.getElementById('incomeSource');
+    const paymentMethodSelect = document.getElementById('incomePaymentMethod');
+    const dateInput = document.getElementById('incomeDate');
+    
+    if (!amountInput || !categorySelect || !paymentMethodSelect || !dateInput) return;
+    
+    const newIncome = {
+        user_id: session.user.id,
+        amount: parseFloat(amountInput.value),
+        category: categorySelect.value,
+        source: sourceInput.value || null,
+        payment_method: paymentMethodSelect.value,
+        date: dateInput.value
+    };
+    
+    if (isNaN(newIncome.amount) || newIncome.amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    
+    if (!newIncome.category) {
+        alert('Please select a category');
+        return;
+    }
+    
+    if (!newIncome.payment_method) {
+        alert('Please select a payment method');
+        return;
+    }
+    
+    try {
+        const { data, error } = await supabase
+            .from('incomes')
+            .insert([newIncome])
+            .select();
+        
+        if (error) throw error;
+        
+        incomes.push(data[0]);
+        
+        document.getElementById('incomeForm').reset();
+        document.getElementById('incomeDate').value = new Date().toISOString().split('T')[0];
+        
+        closeAddTransactionModal();
+        updateDashboard();
+        
+    } catch (error) {
+        console.error('Error adding income:', error);
+        alert('Failed to add income: ' + error.message);
     }
 }
 
@@ -719,6 +1304,36 @@ async function deleteExpense(id) {
 }
 
 window.deleteExpense = deleteExpense;
+
+// ===== DELETE INCOME =====
+async function deleteIncome(id) {
+    if (!confirm('Delete this income?')) return;
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        alert('Please log in again');
+        window.location.href = '/login/login.html';
+        return;
+    }
+    
+    try {
+        const { error } = await supabase
+            .from('incomes')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', session.user.id);
+        
+        if (error) throw error;
+        
+        incomes = incomes.filter(income => income.id !== id);
+        updateDashboard();
+    } catch (error) {
+        console.error('Error deleting income:', error);
+        alert('Failed to delete income');
+    }
+}
+
+window.deleteIncome = deleteIncome;
 
 // ===== DISPLAY USER NAME =====
 async function displayUserName(userId) {
@@ -771,7 +1386,6 @@ function setupTabNavigation() {
     const savingsBtn = document.getElementById('savingsTabBtn');
     const listBtn = document.getElementById('listTabBtn');
     
-    // Get all tab content divs
     const homeTab = document.getElementById('homeTab');
     const budgetsTab = document.getElementById('budgetsTab');
     const savingsTab = document.getElementById('savingsTab');
@@ -782,21 +1396,17 @@ function setupTabNavigation() {
         return;
     }
     
-    // Function to switch tabs
     function switchTab(tabId, activeButton) {
-        // Hide all tabs
         if (homeTab) homeTab.classList.remove('active-tab');
         if (budgetsTab) budgetsTab.classList.remove('active-tab');
         if (savingsTab) savingsTab.classList.remove('active-tab');
         if (listTab) listTab.classList.remove('active-tab');
         
-        // Show selected tab
         const selectedTab = document.getElementById(tabId);
         if (selectedTab) {
             selectedTab.classList.add('active-tab');
         }
         
-        // Update active button state
         document.querySelectorAll('.footer-btn').forEach(btn => {
             btn.classList.remove('active');
         });
@@ -811,11 +1421,11 @@ function setupTabNavigation() {
     budgetsBtn.addEventListener('click', () => {
         switchTab('budgetsTab', budgetsBtn);
         currentTab = 'budgets';
+        updateCategoryBudgets();
     });
     
     addBtn.addEventListener('click', () => {
-        // Open modal instead of switching tab
-        openAddExpenseModal();
+        openAddTransactionModal();
     });
     
     savingsBtn.addEventListener('click', () => {
@@ -832,27 +1442,69 @@ function setupTabNavigation() {
 }
 
 // ===== MODAL FUNCTIONS =====
-function openAddExpenseModal() {
-    const modal = document.getElementById('addExpenseModal');
+function openAddTransactionModal() {
+    const modal = document.getElementById('addTransactionModal');
     if (!modal) return;
     
     modal.style.display = 'flex';
     isModalOpen = true;
     
-    // Set today's date as default
     const today = new Date().toISOString().split('T')[0];
-    const dateInput = document.getElementById('date');
-    if (dateInput) {
-        dateInput.value = today;
-    }
+    const expenseDate = document.getElementById('expenseDate');
+    const incomeDate = document.getElementById('incomeDate');
+    
+    if (expenseDate) expenseDate.value = today;
+    if (incomeDate) incomeDate.value = today;
+    
+    showExpenseForm();
 }
 
-function closeAddExpenseModal() {
-    const modal = document.getElementById('addExpenseModal');
+function closeAddTransactionModal() {
+    const modal = document.getElementById('addTransactionModal');
     if (!modal) return;
     
     modal.style.display = 'none';
     isModalOpen = false;
+}
+
+// ===== MODAL TOGGLE FUNCTIONS =====
+function showExpenseForm() {
+    const expenseForm = document.getElementById('expenseForm');
+    const incomeForm = document.getElementById('incomeForm');
+    const expenseToggle = document.getElementById('expenseToggleBtn');
+    const incomeToggle = document.getElementById('incomeToggleBtn');
+    
+    if (expenseForm) expenseForm.style.display = 'block';
+    if (incomeForm) incomeForm.style.display = 'none';
+    
+    if (expenseToggle) expenseToggle.classList.add('active');
+    if (incomeToggle) incomeToggle.classList.remove('active');
+}
+
+function showIncomeForm() {
+    const expenseForm = document.getElementById('expenseForm');
+    const incomeForm = document.getElementById('incomeForm');
+    const expenseToggle = document.getElementById('expenseToggleBtn');
+    const incomeToggle = document.getElementById('incomeToggleBtn');
+    
+    if (expenseForm) expenseForm.style.display = 'none';
+    if (incomeForm) incomeForm.style.display = 'block';
+    
+    if (expenseToggle) expenseToggle.classList.remove('active');
+    if (incomeToggle) incomeToggle.classList.add('active');
+}
+
+function setupModalToggle() {
+    const expenseToggle = document.getElementById('expenseToggleBtn');
+    const incomeToggle = document.getElementById('incomeToggleBtn');
+    
+    if (expenseToggle) {
+        expenseToggle.addEventListener('click', showExpenseForm);
+    }
+    
+    if (incomeToggle) {
+        incomeToggle.addEventListener('click', showIncomeForm);
+    }
 }
 
 // ===== INITIALIZE APP =====
@@ -860,7 +1512,9 @@ async function initializeApp(user) {
     try {
         await loadBudget(user.id);
         await loadExpenses(user.id);
+        await loadIncomes(user.id);
         await loadSavingsTargets(user.id);
+        await loadBudgetAllocations(user.id); // Load saved budget allocations
         await displayUserName(user.id);
         
         setMonthFromLatestExpense();
@@ -869,26 +1523,26 @@ async function initializeApp(user) {
         setupEventListeners();
         setupTabNavigation();
         setupLockIcon();
+        setupBudgetCardLocks();
+        setupModalToggle();
         
-        // Set up modal close button
-        const cancelBtn = document.getElementById('cancelAddExpense');
+        const cancelBtn = document.getElementById('cancelAddTransaction');
         if (cancelBtn) {
-            cancelBtn.addEventListener('click', closeAddExpenseModal);
+            cancelBtn.addEventListener('click', closeAddTransactionModal);
         }
         
-        // Close modal when clicking overlay
-        const modal = document.getElementById('addExpenseModal');
+        const modal = document.getElementById('addTransactionModal');
         if (modal) {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
-                    closeAddExpenseModal();
+                    closeAddTransactionModal();
                 }
             });
         }
         
         setupLogoutButton();
         
-        console.log('App initialized successfully');
+        console.log('App initialized successfully with MONTHLY_BUDGET:', MONTHLY_BUDGET);
     } catch (error) {
         console.error('Error initializing app:', error);
     }
