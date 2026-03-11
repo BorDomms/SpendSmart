@@ -2,20 +2,15 @@
 import { supabase } from '/supabase.js'
 
 // ===== CHECK SESSION =====
-console.log('Main page loading...');
-
 const { data: { session }, error } = await supabase.auth.getSession();
 
 if (error) {
-    console.error('Session error:', error);
     window.location.href = '/login/login.html';
 }
 
 if (!session) {
-    console.log('No session found, redirecting to login');
     window.location.href = '/login/login.html';
 } else {
-    console.log('Session found for:', session.user.email);
     initializeApp(session.user);
 }
 
@@ -26,15 +21,13 @@ let savingsTargets = [];
 let MONTHLY_BUDGET = 2500;
 
 // ===== CATEGORY PERCENTAGES =====
-// Bills: 25% of total monthly budget
-// Remaining 75% distributed to other categories:
 const categoryPercentages = {
-    'Food': 35,        // 35% of the remaining 75%
-    'Transport': 20,    // 20% of the remaining 75%
-    'Shopping': 20,     // 20% of the remaining 75%
-    'Entertainment': 15, // 15% of the remaining 75%
-    'Bills': 25,        // 25% of TOTAL budget (not of remaining)
-    'Other': 10         // 10% of the remaining 75%
+    'Food': 35,
+    'Transport': 20,
+    'Shopping': 20,
+    'Entertainment': 15,
+    'Bills': 25,
+    'Other': 10
 };
 
 // ===== SUBCATEGORY MAPPING =====
@@ -78,13 +71,26 @@ function getCategoryEmoji(category) {
     return emojis[category] || '📌';
 }
 
+function getPaymentEmoji(method) {
+    const emojis = {
+        'Cash': '💵',
+        'Credit Card': '💳',
+        'Debit Card': '💳',
+        'Bank Transfer': '🏦',
+        'E-Wallet': '📱',
+        'Check': '📝',
+        'Other': '📦'
+    };
+    return emojis[method] || '💳';
+}
+
 function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('en-GB');
 }
 
 // ===== MONTH NAVIGATION =====
 function setMonthFromLatestExpense() {
-    if (expenses.length > 0) {
+    if (expenses && expenses.length > 0) {
         const sortedExpenses = [...expenses].sort((a, b) => 
             new Date(b.date) - new Date(a.date)
         );
@@ -94,6 +100,12 @@ function setMonthFromLatestExpense() {
         
         currentMonth = latestDate.getMonth();
         currentYear = latestDate.getFullYear();
+        console.log('Month set from latest expense:', monthNames[currentMonth], currentYear);
+    } else {
+        const today = new Date();
+        currentMonth = today.getMonth();
+        currentYear = today.getFullYear();
+        console.log('Using current month:', monthNames[currentMonth], currentYear);
     }
 }
 
@@ -139,45 +151,35 @@ function calculateCategorySpending() {
 function updateCategoryCard(category, budget, spent) {
     const amountEl = document.getElementById(`${category.toLowerCase()}Amount`);
     const progressEl = document.getElementById(`${category.toLowerCase()}Progress`);
-    const lockIcon = document.querySelector(`.budget-lock-icon[data-category="${category}"]`);
+    const lockIcon = document.querySelector(`.lock-icon[data-category="${category}"]`);
     
     const remaining = budget - spent;
     const progressPercent = budget > 0 ? (spent / budget) * 100 : 0;
     
-    // Create the full HTML with remaining and total
-    const fullHtml = `<span class="remaining-part">₱${Math.max(remaining, 0).toFixed(0)}</span><span class="separator">/</span><span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱${budget.toFixed(0)}</span>`;
+    const fullHtml = `<span class="card-amount">${Math.max(remaining, 0).toFixed(0)}</span><span class="card-separator">/</span><span class="card-total">${budget.toFixed(0)}</span>`;
     
-    // Update amount display
     if (amountEl) {
-        // Store the full HTML as data attribute
         amountEl.setAttribute('data-original-html', fullHtml);
         
-        // Check if the card is unlocked
         if (lockIcon && lockIcon.getAttribute('data-locked') === 'false') {
-            // If unlocked, show only the total part with Satoshi font
-            amountEl.innerHTML = `<span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱${budget.toFixed(0)}</span>`;
+            amountEl.innerHTML = `<span class="card-total">${budget.toFixed(0)}</span>`;
         } else {
-            // If locked, show the full display
             amountEl.innerHTML = fullHtml;
         }
     }
     
-    // Update progress bar
     if (progressEl) {
         progressEl.style.width = `${Math.min(progressPercent, 100)}%`;
-    }
-    
-    // Change progress bar color if over budget
-    if (progressEl && spent > budget) {
-        progressEl.style.background = 'linear-gradient(90deg, #c53030 0%, #f56565 100%)';
-    } else if (progressEl) {
-        progressEl.style.background = 'linear-gradient(90deg, #7b2cbf 0%, #c77dff 100%)';
+        progressEl.style.background = spent > budget ? 
+            'linear-gradient(90deg, #c53030 0%, #f56565 100%)' : 
+            'linear-gradient(90deg, #7b2cbf 0%, #c77dff 100%)';
     }
 }
 
-// ===== LOAD BUDGET ALLOCATIONS FROM SUPABASE =====
+// ===== BUDGET ALLOCATIONS DATABASE FUNCTIONS =====
 async function loadBudgetAllocations(userId) {
     try {
+        console.log('Loading budget allocations for user:', userId);
         const { data, error } = await supabase
             .from('budget_allocations')
             .select('*')
@@ -185,32 +187,46 @@ async function loadBudgetAllocations(userId) {
         
         if (error && error.code !== 'PGRST116') throw error;
         
+        window.customBudgetAmounts = null;
+        
         if (data && data.length > 0) {
-            // Update categoryPercentages with saved values
+            window.customBudgetAmounts = {};
             data.forEach(allocation => {
-                if (categoryPercentages.hasOwnProperty(allocation.category)) {
-                    categoryPercentages[allocation.category] = allocation.percentage;
-                }
+                window.customBudgetAmounts[allocation.category] = allocation.amount;
             });
-            console.log('Loaded budget allocations from database:', categoryPercentages);
+            console.log('Budget allocations loaded:', window.customBudgetAmounts);
+        } else {
+            console.log('No custom budget allocations found');
         }
     } catch (error) {
         console.error('Error loading budget allocations:', error);
+        window.customBudgetAmounts = null;
     }
 }
 
-// ===== SAVE BUDGET ALLOCATIONS TO SUPABASE =====
 async function saveBudgetAllocations(userId) {
     try {
-        // Convert categoryPercentages object to array for upsert
-        const allocations = Object.entries(categoryPercentages).map(([category, percentage]) => ({
+        const categories = ['Food', 'Transport', 'Shopping', 'Entertainment', 'Bills', 'Other'];
+        const amounts = {};
+        
+        categories.forEach(category => {
+            const amountEl = document.getElementById(`${category.toLowerCase()}Amount`);
+            if (amountEl) {
+                const amountHTML = amountEl.innerHTML;
+                const match = amountHTML.match(/<span class="card-total"[^>]*>(\d+)<\/span>/);
+                if (match) {
+                    amounts[category] = parseFloat(match[1]);
+                }
+            }
+        });
+        
+        const allocations = Object.entries(amounts).map(([category, amount]) => ({
             user_id: userId,
             category,
-            percentage,
+            amount: Math.round(amount),
             updated_at: new Date().toISOString()
         }));
         
-        // Upsert (insert or update) each allocation
         for (const allocation of allocations) {
             const { error } = await supabase
                 .from('budget_allocations')
@@ -221,7 +237,8 @@ async function saveBudgetAllocations(userId) {
             if (error) throw error;
         }
         
-        console.log('Budget allocations saved to database');
+        window.customBudgetAmounts = amounts;
+        
     } catch (error) {
         console.error('Error saving budget allocations:', error);
     }
@@ -229,42 +246,42 @@ async function saveBudgetAllocations(userId) {
 
 // ===== CATEGORY BUDGETS UPDATE =====
 function updateCategoryBudgets() {
-    console.log('===== UPDATING CATEGORY BUDGETS =====');
-    console.log('MONTHLY_BUDGET value:', MONTHLY_BUDGET);
-    
     const monthlyBudget = MONTHLY_BUDGET;
     
-    // Check if monthlyBudget is valid
     if (!monthlyBudget || monthlyBudget <= 0) {
-        console.error('Invalid MONTHLY_BUDGET:', monthlyBudget);
         return;
     }
     
     const categorySpending = calculateCategorySpending();
     
-    // Bills gets 25% of total budget directly
-    const billsBudget = (categoryPercentages.Bills / 100) * monthlyBudget;
+    let foodBudget, transportBudget, shoppingBudget, entertainmentBudget, billsBudget, otherBudget;
     
-    // Remaining 75% goes to other categories
-    const remainingBudget = monthlyBudget - billsBudget;
+    const hasCustomAmounts = window.customBudgetAmounts && Object.keys(window.customBudgetAmounts).length > 0;
     
-    // Distribute remaining budget according to percentages
-    const foodBudget = (categoryPercentages.Food / 100) * remainingBudget;
-    const transportBudget = (categoryPercentages.Transport / 100) * remainingBudget;
-    const shoppingBudget = (categoryPercentages.Shopping / 100) * remainingBudget;
-    const entertainmentBudget = (categoryPercentages.Entertainment / 100) * remainingBudget;
-    const otherBudget = (categoryPercentages.Other / 100) * remainingBudget;
+    if (hasCustomAmounts) {
+        const defaultBillsBudget = (categoryPercentages.Bills / 100) * monthlyBudget;
+        const defaultFoodBudget = (categoryPercentages.Food / 100) * monthlyBudget;
+        const defaultTransportBudget = (categoryPercentages.Transport / 100) * monthlyBudget;
+        const defaultShoppingBudget = (categoryPercentages.Shopping / 100) * monthlyBudget;
+        const defaultEntertainmentBudget = (categoryPercentages.Entertainment / 100) * monthlyBudget;
+        const defaultOtherBudget = (categoryPercentages.Other / 100) * monthlyBudget;
+        
+        foodBudget = window.customBudgetAmounts['Food'] !== undefined ? window.customBudgetAmounts['Food'] : defaultFoodBudget;
+        transportBudget = window.customBudgetAmounts['Transport'] !== undefined ? window.customBudgetAmounts['Transport'] : defaultTransportBudget;
+        shoppingBudget = window.customBudgetAmounts['Shopping'] !== undefined ? window.customBudgetAmounts['Shopping'] : defaultShoppingBudget;
+        entertainmentBudget = window.customBudgetAmounts['Entertainment'] !== undefined ? window.customBudgetAmounts['Entertainment'] : defaultEntertainmentBudget;
+        billsBudget = window.customBudgetAmounts['Bills'] !== undefined ? window.customBudgetAmounts['Bills'] : defaultBillsBudget;
+        otherBudget = window.customBudgetAmounts['Other'] !== undefined ? window.customBudgetAmounts['Other'] : defaultOtherBudget;
+        
+    } else {
+        foodBudget = (categoryPercentages.Food / 100) * monthlyBudget;
+        transportBudget = (categoryPercentages.Transport / 100) * monthlyBudget;
+        shoppingBudget = (categoryPercentages.Shopping / 100) * monthlyBudget;
+        entertainmentBudget = (categoryPercentages.Entertainment / 100) * monthlyBudget;
+        billsBudget = (categoryPercentages.Bills / 100) * monthlyBudget;
+        otherBudget = (categoryPercentages.Other / 100) * monthlyBudget;
+    }
     
-    console.log('Category budgets calculated:', {
-        foodBudget: foodBudget.toFixed(0),
-        transportBudget: transportBudget.toFixed(0),
-        shoppingBudget: shoppingBudget.toFixed(0),
-        entertainmentBudget: entertainmentBudget.toFixed(0),
-        billsBudget: billsBudget.toFixed(0),
-        otherBudget: otherBudget.toFixed(0)
-    });
-    
-    // Update all category cards
     updateCategoryCard('Food', foodBudget, categorySpending.Food || 0);
     updateCategoryCard('Transport', transportBudget, categorySpending.Transport || 0);
     updateCategoryCard('Shopping', shoppingBudget, categorySpending.Shopping || 0);
@@ -272,13 +289,12 @@ function updateCategoryBudgets() {
     updateCategoryCard('Bills', billsBudget, categorySpending.Bills || 0);
     updateCategoryCard('Other', otherBudget, categorySpending.Other || 0);
     
-    // Update Savings card (showing 0 for now)
     const savingsAmountEl = document.getElementById('savingsAllocationAmount');
     const savingsPercentageEl = document.getElementById('savingsAllocationPercentage');
     const savingsProgressEl = document.getElementById('savingsAllocationProgress');
     
     if (savingsAmountEl) {
-        savingsAmountEl.innerHTML = `<span class="remaining-part">₱0</span><span class="separator">/</span><span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱0</span>`;
+        savingsAmountEl.innerHTML = `<span class="card-amount">0</span><span class="card-separator">/</span><span class="card-total">0</span>`;
     }
     if (savingsPercentageEl) {
         savingsPercentageEl.textContent = `0%`;
@@ -287,7 +303,6 @@ function updateCategoryBudgets() {
         savingsProgressEl.style.width = `0%`;
     }
     
-    // Update Remaining card
     const remainingAmountEl = document.getElementById('remainingAmount');
     const remainingPercentageEl = document.getElementById('remainingPercentage');
     const remainingProgressEl = document.getElementById('remainingProgress');
@@ -297,7 +312,7 @@ function updateCategoryBudgets() {
     const unallocated = monthlyBudget - totalAllocated;
     
     if (remainingAmountEl) {
-        remainingAmountEl.innerHTML = `<span class="remaining-part">₱${unallocated.toFixed(0)}</span><span class="separator">/</span><span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱${monthlyBudget.toFixed(0)}</span>`;
+        remainingAmountEl.innerHTML = `<span class="card-amount">${unallocated.toFixed(0)}</span><span class="card-separator">/</span><span class="card-total">${monthlyBudget.toFixed(0)}</span>`;
     }
     if (remainingPercentageEl) {
         const remainingPercent = (unallocated / monthlyBudget) * 100;
@@ -309,44 +324,130 @@ function updateCategoryBudgets() {
     }
 }
 
-// ===== SAVINGS TARGETS LIST UPDATE =====
+// ===== UPDATE SAVINGS TARGETS LIST =====
 function updateSavingsTargetsList() {
-    const goalsList = document.getElementById('goalsList');
-    if (!goalsList) return;
+    const savingsGrid = document.getElementById('savingsGrid');
+    if (!savingsGrid) return;
     
     if (savingsTargets.length === 0) {
-        goalsList.innerHTML = `
-            <div class="empty-state">
-                <p>No savings targets yet.</p>
+        savingsGrid.innerHTML = `
+            <div class="empty-state" id="emptySavingsState">
+                <p>No savings targets yet. Click the + button and select Savings to create one!</p>
             </div>
         `;
         return;
     }
     
-    goalsList.innerHTML = savingsTargets.map(target => {
+    savingsGrid.innerHTML = savingsTargets.map(target => {
         const progress = (target.saved / target.target) * 100;
-        const remaining = target.target - target.saved;
-        
         return `
-        <div class="goal-item" data-id="${target.id}">
-            <div class="goal-header">
-                <span class="goal-name">${target.name}</span>
-                <span class="goal-amount">₱${target.saved.toFixed(2)} / ₱${target.target.toFixed(2)}</span>
+        <div class="card savings-primary" data-id="${target.id}">
+            <div class="card-header">
+                <div class="card-info">
+                    <span class="card-icon">🎯</span>
+                    <h3 class="savings-goal-name">${target.name}</h3>
+                </div>
+                <div class="card-controls">
+                    <i class="fa-solid fa-lock lock-icon locked" data-goal-id="${target.id}" data-locked="true"></i>
+                    <i class="fa-solid fa-trash-can delete-icon" data-goal-id="${target.id}" style="opacity: 0.3; pointer-events: none;"></i>
+                </div>
             </div>
-            <div class="goal-progress">
+            <div class="card-amount-display">
+                <span class="card-amount" id="savings-amount-${target.id}">${target.saved.toFixed(0)}</span>
+                <span class="card-separator">/</span>
+                <span class="card-total">${target.target.toFixed(0)}</span>
+            </div>
+            <div class="card-progress">
                 <div class="progress-container">
-                    <div class="progress-bar" style="width: ${progress}%"></div>
-                </div>
-                <div class="goal-stats">
-                    <span>${progress.toFixed(1)}% complete</span>
-                    <span>₱${remaining.toFixed(2)} left</span>
+                    <div class="progress-bar savings-bar" style="width: ${progress}%"></div>
                 </div>
             </div>
-            <div class="goal-source">
+            <div class="card-stats">
+                <span class="savings-goal-current">${target.saved.toFixed(0)} saved</span>
+                <span class="savings-goal-target-stat">${target.target.toFixed(0)} target</span>
+            </div>
+            <div class="savings-goal-source">
                 <i class="fa-solid fa-filter"></i> Saving from: ${target.source || 'All categories'}
             </div>
         </div>
     `}).join('');
+    
+    setupSavingsGoalLocks();
+    setupSavingsGoalDeletes();
+}
+
+function setupSavingsGoalLocks() {
+    document.querySelectorAll('.lock-icon[data-goal-id]').forEach(lock => {
+        const newLock = lock.cloneNode(true);
+        lock.parentNode.replaceChild(newLock, lock);
+        newLock.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSavingsGoalLock(newLock);
+        });
+    });
+}
+
+function setupSavingsGoalDeletes() {
+    document.querySelectorAll('.delete-icon[data-goal-id]').forEach(deleteIcon => {
+        const newDelete = deleteIcon.cloneNode(true);
+        deleteIcon.parentNode.replaceChild(newDelete, deleteIcon);
+        newDelete.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const goalId = newDelete.dataset.goalId;
+            const lockIcon = document.querySelector(`.lock-icon[data-goal-id="${goalId}"]`);
+            if (lockIcon?.getAttribute('data-locked') === 'false') {
+                deleteSavingsGoal(goalId);
+            }
+        });
+    });
+}
+
+function toggleSavingsGoalLock(lockIcon) {
+    const goalId = lockIcon.dataset.goalId;
+    const deleteIcon = document.querySelector(`.delete-icon[data-goal-id="${goalId}"]`);
+    
+    if (lockIcon.classList.contains('locked')) {
+        lockIcon.className = 'fa-solid fa-unlock lock-icon unlocked';
+        lockIcon.setAttribute('data-locked', 'false');
+        if (deleteIcon) {
+            deleteIcon.style.opacity = '1';
+            deleteIcon.style.pointerEvents = 'auto';
+        }
+    } else {
+        lockIcon.className = 'fa-solid fa-lock lock-icon locked';
+        lockIcon.setAttribute('data-locked', 'true');
+        if (deleteIcon) {
+            deleteIcon.style.opacity = '0.3';
+            deleteIcon.style.pointerEvents = 'none';
+        }
+    }
+}
+
+async function deleteSavingsGoal(goalId) {
+    if (!confirm('Delete this savings goal?')) return;
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+        window.location.href = '/login/login.html';
+        return;
+    }
+    
+    try {
+        const { error } = await supabase
+            .from('savings_targets')
+            .delete()
+            .eq('id', goalId)
+            .eq('user_id', session.user.id);
+        
+        if (error) throw error;
+        
+        savingsTargets = savingsTargets.filter(goal => goal.id != goalId);
+        updateSavingsTargetsList();
+        
+    } catch (error) {
+        alert('Failed to delete savings goal');
+    }
 }
 
 // ===== EXPENSES LIST UPDATE =====
@@ -373,14 +474,7 @@ function updateExpensesList(monthExpenses) {
             categoryDisplay = `${expense.category} | ${expense.subcategory}`;
         }
         
-        const paymentEmoji = {
-            'Cash': '💵',
-            'Credit Card': '💳',
-            'Debit Card': '💳',
-            'Bank Transfer': '🏦',
-            'E-Wallet': '📱',
-            'Other': '📦'
-        }[expense.payment_method] || '💳';
+        const paymentEmoji = getPaymentEmoji(expense.payment_method);
         
         return `
         <div class="expense-item" data-id="${expense.id}">
@@ -393,7 +487,7 @@ function updateExpensesList(monthExpenses) {
                 </span>
             </div>
             <div class="expense-row amount-date-row">
-                <span class="expense-amount">₱${expense.amount.toFixed(2)}</span>
+                <span class="expense-amount">${expense.amount.toFixed(2)}</span>
                 <span class="expense-date">${formatDate(expense.date)}</span>
                 <button class="delete-expense" onclick="deleteExpense(${expense.id})">✕</button>
             </div>
@@ -429,13 +523,7 @@ function updateIncomesList(monthIncomes) {
     );
     
     incomesList.innerHTML = sortedIncomes.map(income => {
-        const paymentEmoji = {
-            'Cash': '💵',
-            'Bank Transfer': '🏦',
-            'E-Wallet': '📱',
-            'Check': '📝',
-            'Other': '📦'
-        }[income.payment_method] || '💰';
+        const paymentEmoji = getPaymentEmoji(income.payment_method);
         
         return `
         <div class="income-item" data-id="${income.id}">
@@ -446,7 +534,7 @@ function updateIncomesList(monthIncomes) {
                 <span class="income-source">${income.source ? `📌 ${income.source}` : ''}</span>
             </div>
             <div class="income-row amount-date-row">
-                <span class="income-amount">₱${income.amount.toFixed(2)}</span>
+                <span class="income-amount">${income.amount.toFixed(2)}</span>
                 <span class="income-date">${formatDate(income.date)}</span>
                 <span class="payment-method-badge" title="${income.payment_method}">
                     ${paymentEmoji}
@@ -473,19 +561,29 @@ function updateDashboard() {
     const spentPercentage = MONTHLY_BUDGET > 0 ? Math.min(100, (totalSpent / MONTHLY_BUDGET) * 100) : 0;
     const budgetPercentage = MONTHLY_BUDGET > 0 ? Math.min(100, Math.max(0, (budgetLeft / MONTHLY_BUDGET) * 100)) : 0;
 
-    const budgetAmountEl = document.getElementById('budgetAmount');
-    if (budgetAmountEl) {
-        budgetAmountEl.textContent = MONTHLY_BUDGET.toFixed(2);
+    const budgetRemainingEl = document.getElementById('budgetRemaining');
+    const budgetTotalEl = document.getElementById('budgetTotal');
+    const lockIcon = document.getElementById('budgetLockIcon');
+    const budgetSeparator = document.getElementById('budgetSeparator');
+    
+    if (budgetRemainingEl) {
+        budgetRemainingEl.textContent = Math.max(budgetLeft, 0).toFixed(0);
+    }
+    if (budgetTotalEl) {
+        budgetTotalEl.textContent = MONTHLY_BUDGET.toFixed(0);
+    }
+    
+    if (lockIcon && lockIcon.getAttribute('data-locked') === 'false') {
+        if (budgetRemainingEl) budgetRemainingEl.style.display = 'none';
+        if (budgetSeparator) budgetSeparator.style.display = 'none';
+    } else {
+        if (budgetRemainingEl) budgetRemainingEl.style.display = 'inline';
+        if (budgetSeparator) budgetSeparator.style.display = 'inline';
     }
     
     const spentAmountEl = document.getElementById('spentAmount');
     if (spentAmountEl) {
         spentAmountEl.textContent = totalSpent.toFixed(2);
-    }
-    
-    const budgetLeftEl = document.getElementById('budgetLeft');
-    if (budgetLeftEl) {
-        budgetLeftEl.textContent = `${budgetLeft.toFixed(2)} left`;
     }
     
     const budgetPercentageEl = document.getElementById('budgetPercentage');
@@ -557,29 +655,36 @@ function updateDashboard() {
 // ===== LOAD DATA FROM SUPABASE =====
 async function loadBudget(userId) {
     try {
+        console.log('Loading budget for user:', userId);
         const { data, error } = await supabase
             .from('profiles')
             .select('monthly_budget')
             .eq('id', userId)
             .single();
         
-        if (error && error.code === 'PGRST116') {
-            const { error: insertError } = await supabase
-                .from('profiles')
-                .insert([{ 
-                    id: userId, 
-                    monthly_budget: 2500,
-                    first_name: 'User',
-                    last_name: 'Name',
-                    email: session?.user?.email || ''
-                }]);
-            
-            if (insertError) throw insertError;
-            MONTHLY_BUDGET = 2500;
+        if (error) {
+            if (error.code === 'PGRST116') {
+                console.log('No profile found, creating default');
+                const { error: insertError } = await supabase
+                    .from('profiles')
+                    .insert([{ 
+                        id: userId, 
+                        monthly_budget: 2500,
+                        first_name: 'User',
+                        last_name: 'Name',
+                        email: session?.user?.email || ''
+                    }]);
+                
+                if (insertError) throw insertError;
+                MONTHLY_BUDGET = 2500;
+                console.log('Default budget set to 2500');
+            } else {
+                throw error;
+            }
         } else if (data) {
             MONTHLY_BUDGET = parseFloat(data.monthly_budget);
+            console.log('Budget loaded:', MONTHLY_BUDGET);
         }
-        console.log('Monthly budget loaded:', MONTHLY_BUDGET);
     } catch (error) {
         console.error('Error loading budget:', error);
     }
@@ -587,6 +692,7 @@ async function loadBudget(userId) {
 
 async function loadExpenses(userId) {
     try {
+        console.log('Loading expenses for user:', userId);
         const { data, error } = await supabase
             .from('expenses')
             .select('*')
@@ -595,14 +701,16 @@ async function loadExpenses(userId) {
         
         if (error) throw error;
         
-        expenses = data.map(expense => ({
+        expenses = data ? data.map(expense => ({
             id: expense.id,
             amount: parseFloat(expense.amount),
             category: expense.category,
             subcategory: expense.subcategory || null,
             payment_method: expense.payment_method || 'Cash',
             date: expense.date
-        }));
+        })) : [];
+        
+        console.log('Expenses loaded:', expenses.length);
     } catch (error) {
         console.error('Error loading expenses:', error);
     }
@@ -610,6 +718,7 @@ async function loadExpenses(userId) {
 
 async function loadIncomes(userId) {
     try {
+        console.log('Loading incomes for user:', userId);
         const { data, error } = await supabase
             .from('incomes')
             .select('*')
@@ -618,14 +727,16 @@ async function loadIncomes(userId) {
         
         if (error) throw error;
         
-        incomes = data.map(income => ({
+        incomes = data ? data.map(income => ({
             id: income.id,
             amount: parseFloat(income.amount),
             category: income.category,
             source: income.source || null,
             payment_method: income.payment_method,
             date: income.date
-        }));
+        })) : [];
+        
+        console.log('Incomes loaded:', incomes.length);
     } catch (error) {
         console.error('Error loading incomes:', error);
     }
@@ -633,12 +744,15 @@ async function loadIncomes(userId) {
 
 async function loadSavingsTargets(userId) {
     try {
+        console.log('Loading savings targets for user:', userId);
         const { data, error } = await supabase
             .from('savings_targets')
             .select('*')
             .eq('user_id', userId);
         
-        if (error && error.code !== 'PGRST116') throw error;
+        if (error) {
+            if (error.code !== 'PGRST116') throw error;
+        }
         
         if (data) {
             savingsTargets = data.map(goal => ({
@@ -646,21 +760,27 @@ async function loadSavingsTargets(userId) {
                 name: goal.name,
                 target: parseFloat(goal.target_amount),
                 saved: parseFloat(goal.current_amount) || 0,
-                type: goal.target_type,
                 source: goal.source_category
             }));
+        } else {
+            savingsTargets = [];
         }
+        
+        console.log('Savings targets loaded:', savingsTargets.length);
     } catch (error) {
         console.error('Error loading savings targets:', error);
+        savingsTargets = [];
     }
 }
 
 // ===== LOCK ICON FUNCTIONS =====
 function setupLockIcon() {
     const lockIcon = document.getElementById('budgetLockIcon');
-    const budgetAmount = document.getElementById('budgetAmount');
+    const budgetRemaining = document.getElementById('budgetRemaining');
+    const budgetSeparator = document.getElementById('budgetSeparator');
+    const budgetTotal = document.getElementById('budgetTotal');
     
-    if (!lockIcon || !budgetAmount) return;
+    if (!lockIcon || !budgetRemaining || !budgetTotal) return;
     
     lockIcon.setAttribute('data-locked', 'true');
     lockIcon.classList.add('locked');
@@ -670,36 +790,46 @@ function setupLockIcon() {
             this.classList.remove('fa-lock', 'locked');
             this.classList.add('fa-unlock', 'unlocked');
             this.setAttribute('data-locked', 'false');
-            budgetAmount.classList.add('editable');
-            budgetAmount.addEventListener('click', editBudget);
+            
+            budgetRemaining.style.display = 'none';
+            budgetSeparator.style.display = 'none';
+            budgetTotal.classList.add('editable');
+            budgetTotal.addEventListener('click', editBudget);
         } else {
             this.classList.remove('fa-unlock', 'unlocked');
             this.classList.add('fa-lock', 'locked');
             this.setAttribute('data-locked', 'true');
-            budgetAmount.classList.remove('editable');
-            budgetAmount.removeEventListener('click', editBudget);
+            
+            budgetRemaining.style.display = 'inline';
+            budgetSeparator.style.display = 'inline';
+            budgetTotal.classList.remove('editable');
+            budgetTotal.removeEventListener('click', editBudget);
         }
     });
 }
 
 // ===== EDIT BUDGET =====
 async function editBudget() {
-    const budgetAmount = document.getElementById('budgetAmount');
+    const budgetTotal = document.getElementById('budgetTotal');
     const lockIcon = document.getElementById('budgetLockIcon');
+    const budgetRemaining = document.getElementById('budgetRemaining');
+    const budgetSeparator = document.getElementById('budgetSeparator');
     
     if (!lockIcon || lockIcon.getAttribute('data-locked') === 'true') return;
     
-    const currentValue = parseFloat(budgetAmount.textContent.replace(/,/g, ''));
+    const currentValue = MONTHLY_BUDGET;
     
     const input = document.createElement('input');
     input.type = 'text';
     input.value = currentValue;
     input.inputMode = 'decimal';
     input.className = 'budget-input';
+    input.style.width = '120px';
     
-    budgetAmount.style.display = 'none';
-    budgetAmount.parentNode.appendChild(input);
+    budgetTotal.style.display = 'none';
+    budgetTotal.parentNode.appendChild(input);
     input.focus();
+    input.select();
     
     async function finishEditing() {
         const newValue = parseFloat(input.value);
@@ -708,7 +838,6 @@ async function editBudget() {
             const { data: { session } } = await supabase.auth.getSession();
             
             if (!session) {
-                alert('Session expired. Please log in again.');
                 window.location.href = '/login/login.html';
                 return;
             }
@@ -722,20 +851,34 @@ async function editBudget() {
                 if (error) throw error;
                 
                 MONTHLY_BUDGET = newValue;
-                budgetAmount.textContent = newValue.toFixed(2);
                 updateDashboard();
+                
+                budgetTotal.textContent = newValue.toFixed(0);
+                budgetTotal.style.display = 'inline';
+                
+                const monthExpenses = expenses.filter(expense => {
+                    const expenseDate = new Date(expense.date);
+                    return expenseDate.getMonth() === currentMonth && 
+                           expenseDate.getFullYear() === currentYear;
+                });
+                const totalSpent = monthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+                const budgetLeft = MONTHLY_BUDGET - totalSpent;
+                budgetRemaining.textContent = Math.max(budgetLeft, 0).toFixed(0);
+                
             } catch (error) {
-                console.error('Error updating budget:', error);
                 alert('Failed to update budget');
             }
         }
         
         input.remove();
-        budgetAmount.style.display = 'flex';
+        budgetTotal.style.display = 'inline';
     }
     
     input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') finishEditing();
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            finishEditing();
+        }
     });
     
     input.addEventListener('blur', finishEditing);
@@ -743,10 +886,9 @@ async function editBudget() {
 
 // ===== BUDGET CARD LOCK ICON SETUP =====
 function setupBudgetCardLocks() {
-    const lockIcons = document.querySelectorAll('.budget-lock-icon');
+    const lockIcons = document.querySelectorAll('.lock-icon[data-category]');
     
     lockIcons.forEach(lockIcon => {
-        // Remove any existing event listeners
         const newLockIcon = lockIcon.cloneNode(true);
         lockIcon.parentNode.replaceChild(newLockIcon, lockIcon);
         
@@ -761,109 +903,60 @@ function setupBudgetCardLocks() {
 function toggleBudgetCardLock(lockIcon) {
     const category = lockIcon.dataset.category;
     const amountEl = document.getElementById(`${category.toLowerCase()}Amount`);
-    const percentageEl = document.getElementById(`${category.toLowerCase()}Percentage`);
     
     if (!amountEl) return;
     
     if (lockIcon.classList.contains('locked')) {
-        // Unlock
-        lockIcon.classList.remove('fa-lock', 'locked');
-        lockIcon.classList.add('fa-unlock', 'unlocked');
+        lockIcon.className = 'fa-solid fa-unlock lock-icon unlocked';
         lockIcon.setAttribute('data-locked', 'false');
         
-        // Store the original HTML to restore later
         amountEl.setAttribute('data-original-html', amountEl.innerHTML);
         
-        // Extract just the total allocation amount
-        const amountHTML = amountEl.innerHTML;
-        const match = amountHTML.match(/<span class="total-part"[^>]*>(₱\d+)<\/span>/);
+        const match = amountEl.innerHTML.match(/(\d+)/);
         if (match) {
-            // Replace with just the total allocation amount, keeping the same font style
-            amountEl.innerHTML = `<span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">${match[1]}</span>`;
-        } else {
-            // Fallback if pattern doesn't match
-            const textMatch = amountHTML.match(/₱(\d+)/);
-            if (textMatch) {
-                amountEl.innerHTML = `<span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱${textMatch[1]}</span>`;
-            }
+            amountEl.innerHTML = `<span class="card-total">${match[1]}</span>`;
         }
         
-        // Remove any existing click handler before adding new one
-        if (amountEl._clickHandler) {
-            amountEl.removeEventListener('click', amountEl._clickHandler);
-        }
-        
-        // Define the click handler for amount only
-        const amountClickHandler = function() {
-            editBudgetCardAmount(category);
-        };
-        
-        // Store the handler on the element for later removal
-        amountEl._clickHandler = amountClickHandler;
-        amountEl.addEventListener('click', amountClickHandler);
-        
-        // Percentage is NOT editable - remove any existing classes
-        if (percentageEl) {
-            percentageEl.classList.remove('editable');
-        }
-        
-        console.log(`Card unlocked for category: ${category}`);
+        const handler = () => editBudgetCardAmount(category);
+        amountEl._clickHandler = handler;
+        amountEl.addEventListener('click', handler);
     } else {
-        // Lock
-        lockIcon.classList.remove('fa-unlock', 'unlocked');
-        lockIcon.classList.add('fa-lock', 'locked');
+        lockIcon.className = 'fa-solid fa-lock lock-icon locked';
         lockIcon.setAttribute('data-locked', 'true');
         
-        // Restore original HTML with remaining amount
-        const originalHtml = amountEl.getAttribute('data-original-html');
-        if (originalHtml) {
-            amountEl.innerHTML = originalHtml;
-        }
+        const original = amountEl.getAttribute('data-original-html');
+        if (original) amountEl.innerHTML = original;
         
         if (amountEl._clickHandler) {
             amountEl.removeEventListener('click', amountEl._clickHandler);
             delete amountEl._clickHandler;
         }
-        
-        console.log(`Card locked for category: ${category}`);
     }
 }
 
 // ===== EDIT BUDGET CARD AMOUNT =====
-function editBudgetCardAmount(category) {
-    console.log(`Editing total allocation for category: ${category}`);
-    
+async function editBudgetCardAmount(category) {
     const amountEl = document.getElementById(`${category.toLowerCase()}Amount`);
-    const lockIcon = document.querySelector(`.budget-lock-icon[data-category="${category}"]`);
+    const lockIcon = document.querySelector(`.lock-icon[data-category="${category}"]`);
     
     if (!lockIcon || lockIcon.getAttribute('data-locked') === 'true') {
-        console.log('Cannot edit - card is locked');
         return;
     }
     
-    // Get current total allocation (now just the plain number)
     let currentTotalAllocation = 0;
     const amountText = amountEl.textContent || amountEl.innerText;
-    const match = amountText.match(/₱?(\d+(?:\.\d+)?)/);
+    const match = amountText.match(/(\d+(?:\.\d+)?)/);
     if (match) {
         currentTotalAllocation = parseFloat(match[1]);
     }
-    console.log('Current total allocation:', currentTotalAllocation);
     
-    // Create input element with Satoshi font
     const input = document.createElement('input');
     input.type = 'number';
     input.value = currentTotalAllocation;
     input.step = 'any';
     input.min = '0';
     input.className = 'budget-amount-input';
-    input.style.fontFamily = "'Satoshi', sans-serif";
-    input.style.fontWeight = '400';
-    input.style.fontSize = '16px';
-    input.style.color = '#a0aec0';
-    input.style.width = '100px';
     
-    // Hide the original amount display
     amountEl.style.display = 'none';
     amountEl.parentNode.appendChild(input);
     input.focus();
@@ -871,60 +964,25 @@ function editBudgetCardAmount(category) {
     
     let editingCancelled = false;
     
-    function finishEditing(saveChanges = true) {
+    const finishEditing = async (saveChanges = true) => {
         if (editingCancelled) return;
         editingCancelled = true;
         
         if (saveChanges) {
             const newTotalAllocation = parseFloat(input.value);
-            console.log('New total allocation:', newTotalAllocation);
             
             if (!isNaN(newTotalAllocation) && newTotalAllocation >= 0 && newTotalAllocation !== currentTotalAllocation) {
-                // Update the category percentage based on new total allocation
-                updateCategoryPercentageFromTotalAllocation(category, newTotalAllocation);
-                
-                // After updateCategoryBudgets runs, we need to update the displayed total
-                // But we also need to maintain the unlocked state showing only total with correct font
-                setTimeout(() => {
-                    // Get the updated amount element
-                    const updatedAmountEl = document.getElementById(`${category.toLowerCase()}Amount`);
-                    if (updatedAmountEl && lockIcon.getAttribute('data-locked') === 'false') {
-                        // Store new original HTML
-                        const updatedHTML = updatedAmountEl.innerHTML;
-                        updatedAmountEl.setAttribute('data-original-html', updatedHTML);
-                        
-                        // Extract just the new total allocation and apply correct font
-                        const newMatch = updatedHTML.match(/<span class="total-part"[^>]*>(₱\d+)<\/span>/);
-                        if (newMatch) {
-                            updatedAmountEl.innerHTML = `<span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">${newMatch[1]}</span>`;
-                        } else {
-                            // Fallback
-                            const textMatch = updatedHTML.match(/₱(\d+)/);
-                            if (textMatch) {
-                                updatedAmountEl.innerHTML = `<span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱${textMatch[1]}</span>`;
-                            }
-                        }
-                    }
-                }, 100);
-            } else {
-                // If no changes, restore the total display with correct font
-                setTimeout(() => {
-                    const updatedAmountEl = document.getElementById(`${category.toLowerCase()}Amount`);
-                    if (updatedAmountEl && lockIcon.getAttribute('data-locked') === 'false') {
-                        const currentHTML = updatedAmountEl.innerHTML;
-                        const totalMatch = currentHTML.match(/₱(\d+)/);
-                        if (totalMatch) {
-                            updatedAmountEl.innerHTML = `<span class="total-part" style="font-family: 'Satoshi', sans-serif; font-weight: 400; color: #a0aec0;">₱${totalMatch[1]}</span>`;
-                        }
-                    }
-                }, 100);
+                await saveCategoryAmount(category, newTotalAllocation);
             }
         }
         
-        // Remove input and show original element
         input.remove();
         amountEl.style.display = 'block';
-    }
+        
+        if (lockIcon && lockIcon.getAttribute('data-locked') === 'false') {
+            toggleBudgetCardLock(lockIcon);
+        }
+    };
     
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -945,109 +1003,114 @@ function editBudgetCardAmount(category) {
     });
 }
 
-// ===== HELPER: UPDATE CATEGORY PERCENTAGE FROM TOTAL ALLOCATION =====
-async function updateCategoryPercentageFromTotalAllocation(category, newTotalAllocation) {
-    console.log(`Updating percentage for ${category} from total allocation: ${newTotalAllocation}`);
-    
-    const monthlyBudget = MONTHLY_BUDGET;
+// ===== SAVE CATEGORY AMOUNT TO DATABASE =====
+async function saveCategoryAmount(category, newAmount) {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
-        alert('Please log in again');
         window.location.href = '/login/login.html';
         return;
     }
     
-    if (category === 'Bills') {
-        // Bills is percentage of total
-        const newPercentage = (newTotalAllocation / monthlyBudget) * 100;
-        categoryPercentages.Bills = Math.min(100, Math.max(0, newPercentage));
-        console.log(`New Bills percentage: ${categoryPercentages.Bills}%`);
-    } else {
-        // Other categories are from the remaining after Bills
-        const billsBudget = (categoryPercentages.Bills / 100) * monthlyBudget;
-        const remainingBudget = monthlyBudget - billsBudget;
+    const roundedAmount = Math.round(newAmount);
+    
+    const allocation = {
+        user_id: session.user.id,
+        category,
+        amount: roundedAmount,
+        updated_at: new Date().toISOString()
+    };
+    
+    try {
+        const { error } = await supabase
+            .from('budget_allocations')
+            .upsert(allocation, { 
+                onConflict: 'user_id, category'
+            });
         
-        if (remainingBudget > 0) {
-            const newPercentage = (newTotalAllocation / remainingBudget) * 100;
-            categoryPercentages[category] = Math.min(100, Math.max(0, newPercentage));
-            console.log(`New ${category} percentage: ${categoryPercentages[category]}%`);
+        if (error) throw error;
+        
+        if (!window.customBudgetAmounts) {
+            window.customBudgetAmounts = {};
         }
+        window.customBudgetAmounts[category] = roundedAmount;
+        
+        updateCategoryBudgets();
+        
+    } catch (error) {
+        alert('Failed to save budget amount');
     }
-    
-    // Save the updated allocations to database
-    await saveBudgetAllocations(session.user.id);
-    
-    // Recalculate all budgets
-    updateCategoryBudgets();
 }
 
-// ===== CREATE NEW SAVINGS TARGET =====
-async function createNewGoalCompact() {
-    const goalTo = document.getElementById('goalToCompact');
-    const goalFrom = document.getElementById('goalFromCompact');
-    const goalAmount = document.getElementById('goalAmountCompact');
-    
-    if (!goalTo || !goalFrom || !goalAmount) return;
-    
-    const goalToValue = goalTo.value;
-    const goalFromValue = goalFrom.value;
-    const goalAmountValue = goalAmount.value;
-    
-    if (!goalToValue || !goalFromValue || !goalAmountValue) {
-        alert('Please fill in all fields');
-        return;
-    }
-    
-    const amount = parseFloat(goalAmountValue);
-    if (isNaN(amount) || amount <= 0) {
-        alert('Please enter a valid amount');
-        return;
-    }
+// ===== ADD SAVINGS GOAL =====
+async function addSavingsGoal(event) {
+    event.preventDefault();
     
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-        alert('Please log in again');
         window.location.href = '/login/login.html';
         return;
     }
     
-    const newTarget = {
+    const nameInput = document.getElementById('savingsName');
+    const targetAmountInput = document.getElementById('savingsTargetAmount');
+    const categorySelect = document.getElementById('savingsCategory');
+    
+    if (!nameInput || !targetAmountInput || !categorySelect) return;
+    
+    const name = nameInput.value;
+    const targetAmount = parseFloat(targetAmountInput.value);
+    const category = categorySelect.value;
+    
+    if (!name) {
+        alert('Please enter a goal name');
+        return;
+    }
+    
+    if (isNaN(targetAmount) || targetAmount <= 0) {
+        alert('Please enter a valid target amount');
+        return;
+    }
+    
+    if (!category) {
+        alert('Please select a category');
+        return;
+    }
+    
+    const newGoal = {
         user_id: session.user.id,
-        name: `${goalToValue} (from ${goalFromValue})`,
-        target_amount: amount,
+        name: name,
+        target_amount: targetAmount,
         current_amount: 0,
-        target_type: goalToValue,
-        source_category: goalFromValue,
+        target_type: 'Savings Goal',
+        source_category: category,
         created_at: new Date().toISOString()
     };
     
     try {
         const { data, error } = await supabase
             .from('savings_targets')
-            .insert([newTarget])
+            .insert([newGoal])
             .select();
         
         if (error) throw error;
         
         savingsTargets.push({
             id: data[0].id,
-            name: `${goalToValue} (from ${goalFromValue})`,
-            target: amount,
+            name: name,
+            target: targetAmount,
             saved: 0,
-            type: goalToValue,
-            source: goalFromValue
+            source: category
         });
         
-        goalTo.value = '';
-        goalFrom.value = '';
-        goalAmount.value = '';
+        document.getElementById('savingsForm').reset();
+        
+        closeAddTransactionModal();
         
         updateSavingsTargetsList();
         
     } catch (error) {
-        console.error('Error adding savings target:', error);
-        alert('Failed to add savings target');
+        alert('Failed to add savings goal: ' + error.message);
     }
 }
 
@@ -1063,19 +1126,22 @@ function setupEventListeners() {
         incomeForm.addEventListener('submit', addIncome);
     }
     
+    const savingsForm = document.getElementById('savingsForm');
+    if (savingsForm) {
+        savingsForm.addEventListener('submit', addSavingsGoal);
+    }
+    
     const expenseCategory = document.getElementById('expenseCategory');
     if (expenseCategory) {
         expenseCategory.addEventListener('change', updateExpenseSubcategoryDropdown);
     }
     
-    const createGoalBtn = document.getElementById('createGoalCompactBtn');
-    if (createGoalBtn) {
-        createGoalBtn.addEventListener('click', createNewGoalCompact);
-    }
-    
     const prevMonthBtn = document.getElementById('prevMonth');
     if (prevMonthBtn) {
-        prevMonthBtn.addEventListener('click', () => {
+        const newPrevBtn = prevMonthBtn.cloneNode(true);
+        prevMonthBtn.parentNode.replaceChild(newPrevBtn, prevMonthBtn);
+        newPrevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             if (currentMonth === 0) {
                 currentMonth = 11;
                 currentYear--;
@@ -1089,7 +1155,10 @@ function setupEventListeners() {
     
     const nextMonthBtn = document.getElementById('nextMonth');
     if (nextMonthBtn) {
-        nextMonthBtn.addEventListener('click', () => {
+        const newNextBtn = nextMonthBtn.cloneNode(true);
+        nextMonthBtn.parentNode.replaceChild(newNextBtn, nextMonthBtn);
+        newNextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             if (currentMonth === 11) {
                 currentMonth = 0;
                 currentYear++;
@@ -1146,7 +1215,6 @@ async function addExpense(event) {
     
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-        alert('Please log in again');
         window.location.href = '/login/login.html';
         return;
     }
@@ -1205,7 +1273,6 @@ async function addExpense(event) {
         closeAddTransactionModal();
         updateDashboard();
     } catch (error) {
-        console.error('Error adding expense:', error);
         alert('Failed to add expense');
     }
 }
@@ -1216,7 +1283,6 @@ async function addIncome(event) {
     
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-        alert('Please log in again');
         window.location.href = '/login/login.html';
         return;
     }
@@ -1270,7 +1336,6 @@ async function addIncome(event) {
         updateDashboard();
         
     } catch (error) {
-        console.error('Error adding income:', error);
         alert('Failed to add income: ' + error.message);
     }
 }
@@ -1281,7 +1346,6 @@ async function deleteExpense(id) {
     
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-        alert('Please log in again');
         window.location.href = '/login/login.html';
         return;
     }
@@ -1298,7 +1362,6 @@ async function deleteExpense(id) {
         expenses = expenses.filter(expense => expense.id !== id);
         updateDashboard();
     } catch (error) {
-        console.error('Error deleting expense:', error);
         alert('Failed to delete expense');
     }
 }
@@ -1311,7 +1374,6 @@ async function deleteIncome(id) {
     
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-        alert('Please log in again');
         window.location.href = '/login/login.html';
         return;
     }
@@ -1328,7 +1390,6 @@ async function deleteIncome(id) {
         incomes = incomes.filter(income => income.id !== id);
         updateDashboard();
     } catch (error) {
-        console.error('Error deleting income:', error);
         alert('Failed to delete income');
     }
 }
@@ -1356,7 +1417,6 @@ async function displayUserName(userId) {
             `;
         }
     } catch (error) {
-        console.error('Error loading user name:', error);
         const userNameElement = document.getElementById('userNameDisplay');
         if (userNameElement) {
             userNameElement.innerHTML = `
@@ -1380,6 +1440,8 @@ function setupLogoutButton() {
 
 // ===== TAB NAVIGATION =====
 function setupTabNavigation() {
+    console.log('Setting up tab navigation');
+    
     const homeBtn = document.getElementById('homeTabBtn');
     const budgetsBtn = document.getElementById('budgetsTabBtn');
     const addBtn = document.getElementById('addTabBtn');
@@ -1391,12 +1453,16 @@ function setupTabNavigation() {
     const savingsTab = document.getElementById('savingsTab');
     const listTab = document.getElementById('listTab');
     
+    console.log('Add button found:', addBtn ? 'YES' : 'NO');
+    
     if (!homeBtn || !budgetsBtn || !addBtn || !savingsBtn || !listBtn) {
-        console.error('Tab navigation buttons not found');
+        console.error('Navigation buttons not found');
         return;
     }
     
     function switchTab(tabId, activeButton) {
+        console.log('Switching to tab:', tabId);
+        
         if (homeTab) homeTab.classList.remove('active-tab');
         if (budgetsTab) budgetsTab.classList.remove('active-tab');
         if (savingsTab) savingsTab.classList.remove('active-tab');
@@ -1410,41 +1476,74 @@ function setupTabNavigation() {
         document.querySelectorAll('.footer-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        activeButton.classList.add('active');
+        if (activeButton) {
+            activeButton.classList.add('active');
+        }
+        
+        if (tabId === 'homeTab') currentTab = 'home';
+        else if (tabId === 'budgetsTab') currentTab = 'budgets';
+        else if (tabId === 'savingsTab') currentTab = 'savings';
+        else if (tabId === 'listTab') currentTab = 'list';
+        
+        if (tabId === 'budgetsTab') {
+            updateCategoryBudgets();
+        } else if (tabId === 'savingsTab') {
+            updateSavingsTargetsList();
+        } else if (tabId === 'listTab' || tabId === 'homeTab') {
+            updateDashboard();
+        }
     }
     
-    homeBtn.addEventListener('click', () => {
-        switchTab('homeTab', homeBtn);
-        currentTab = 'home';
+    const newHomeBtn = homeBtn.cloneNode(true);
+    const newBudgetsBtn = budgetsBtn.cloneNode(true);
+    const newAddBtn = addBtn.cloneNode(true);
+    const newSavingsBtn = savingsBtn.cloneNode(true);
+    const newListBtn = listBtn.cloneNode(true);
+    
+    homeBtn.parentNode.replaceChild(newHomeBtn, homeBtn);
+    budgetsBtn.parentNode.replaceChild(newBudgetsBtn, budgetsBtn);
+    addBtn.parentNode.replaceChild(newAddBtn, addBtn);
+    savingsBtn.parentNode.replaceChild(newSavingsBtn, savingsBtn);
+    listBtn.parentNode.replaceChild(newListBtn, listBtn);
+    
+    newHomeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('homeTab', newHomeBtn);
     });
     
-    budgetsBtn.addEventListener('click', () => {
-        switchTab('budgetsTab', budgetsBtn);
-        currentTab = 'budgets';
-        updateCategoryBudgets();
+    newBudgetsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('budgetsTab', newBudgetsBtn);
     });
     
-    addBtn.addEventListener('click', () => {
+    newAddBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('✅ Add button clicked - opening modal');
         openAddTransactionModal();
     });
     
-    savingsBtn.addEventListener('click', () => {
-        switchTab('savingsTab', savingsBtn);
-        currentTab = 'savings';
-        updateSavingsTargetsList();
+    newSavingsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('savingsTab', newSavingsBtn);
     });
     
-    listBtn.addEventListener('click', () => {
-        switchTab('listTab', listBtn);
-        currentTab = 'list';
-        updateDashboard();
+    newListBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('listTab', newListBtn);
     });
+    
+    console.log('Tab navigation setup complete');
 }
 
 // ===== MODAL FUNCTIONS =====
 function openAddTransactionModal() {
+    console.log('Opening modal');
     const modal = document.getElementById('addTransactionModal');
-    if (!modal) return;
+    if (!modal) {
+        console.error('Modal not found');
+        return;
+    }
     
     modal.style.display = 'flex';
     isModalOpen = true;
@@ -1456,10 +1555,12 @@ function openAddTransactionModal() {
     if (expenseDate) expenseDate.value = today;
     if (incomeDate) incomeDate.value = today;
     
+    // Always start with expense form
     showExpenseForm();
 }
 
 function closeAddTransactionModal() {
+    console.log('Closing modal');
     const modal = document.getElementById('addTransactionModal');
     if (!modal) return;
     
@@ -1469,70 +1570,204 @@ function closeAddTransactionModal() {
 
 // ===== MODAL TOGGLE FUNCTIONS =====
 function showExpenseForm() {
+    console.log('Showing expense form');
     const expenseForm = document.getElementById('expenseForm');
     const incomeForm = document.getElementById('incomeForm');
+    const savingsForm = document.getElementById('savingsForm');
     const expenseToggle = document.getElementById('expenseToggleBtn');
     const incomeToggle = document.getElementById('incomeToggleBtn');
+    const savingsToggle = document.getElementById('savingsToggleBtn');
     
     if (expenseForm) expenseForm.style.display = 'block';
     if (incomeForm) incomeForm.style.display = 'none';
+    if (savingsForm) savingsForm.style.display = 'none';
     
-    if (expenseToggle) expenseToggle.classList.add('active');
-    if (incomeToggle) incomeToggle.classList.remove('active');
+    if (expenseToggle) {
+        expenseToggle.classList.add('active');
+        // Force inline style removal to let CSS take over
+        expenseToggle.style.color = '';
+        const text = expenseToggle.querySelector('.toggle-text');
+        if (text) text.style.color = '';
+    }
+    if (incomeToggle) {
+        incomeToggle.classList.remove('active');
+        incomeToggle.style.color = '';
+        const text = incomeToggle.querySelector('.toggle-text');
+        if (text) text.style.color = '';
+    }
+    if (savingsToggle) {
+        savingsToggle.classList.remove('active');
+        savingsToggle.style.color = '';
+        const text = savingsToggle.querySelector('.toggle-text');
+        if (text) text.style.color = '';
+    }
 }
 
 function showIncomeForm() {
+    console.log('Showing income form');
     const expenseForm = document.getElementById('expenseForm');
     const incomeForm = document.getElementById('incomeForm');
+    const savingsForm = document.getElementById('savingsForm');
     const expenseToggle = document.getElementById('expenseToggleBtn');
     const incomeToggle = document.getElementById('incomeToggleBtn');
+    const savingsToggle = document.getElementById('savingsToggleBtn');
     
     if (expenseForm) expenseForm.style.display = 'none';
     if (incomeForm) incomeForm.style.display = 'block';
-    
-    if (expenseToggle) expenseToggle.classList.remove('active');
-    if (incomeToggle) incomeToggle.classList.add('active');
-}
-
-function setupModalToggle() {
-    const expenseToggle = document.getElementById('expenseToggleBtn');
-    const incomeToggle = document.getElementById('incomeToggleBtn');
+    if (savingsForm) savingsForm.style.display = 'none';
     
     if (expenseToggle) {
-        expenseToggle.addEventListener('click', showExpenseForm);
+        expenseToggle.classList.remove('active');
+        expenseToggle.style.color = '';
+        const text = expenseToggle.querySelector('.toggle-text');
+        if (text) text.style.color = '';
+    }
+    if (incomeToggle) {
+        incomeToggle.classList.add('active');
+        incomeToggle.style.color = '';
+        const text = incomeToggle.querySelector('.toggle-text');
+        if (text) text.style.color = '';
+    }
+    if (savingsToggle) {
+        savingsToggle.classList.remove('active');
+        savingsToggle.style.color = '';
+        const text = savingsToggle.querySelector('.toggle-text');
+        if (text) text.style.color = '';
+    }
+}
+
+function showSavingsForm() {
+    console.log('Showing savings form');
+    const expenseForm = document.getElementById('expenseForm');
+    const incomeForm = document.getElementById('incomeForm');
+    const savingsForm = document.getElementById('savingsForm');
+    const expenseToggle = document.getElementById('expenseToggleBtn');
+    const incomeToggle = document.getElementById('incomeToggleBtn');
+    const savingsToggle = document.getElementById('savingsToggleBtn');
+    
+    if (expenseForm) expenseForm.style.display = 'none';
+    if (incomeForm) incomeForm.style.display = 'none';
+    if (savingsForm) savingsForm.style.display = 'block';
+    
+    if (expenseToggle) {
+        expenseToggle.classList.remove('active');
+        expenseToggle.style.color = '';
+        const text = expenseToggle.querySelector('.toggle-text');
+        if (text) text.style.color = '';
+    }
+    if (incomeToggle) {
+        incomeToggle.classList.remove('active');
+        incomeToggle.style.color = '';
+        const text = incomeToggle.querySelector('.toggle-text');
+        if (text) text.style.color = '';
+    }
+    if (savingsToggle) {
+        savingsToggle.classList.add('active');
+        savingsToggle.style.color = '';
+        const text = savingsToggle.querySelector('.toggle-text');
+        if (text) text.style.color = '';
+    }
+}
+
+// ===== MODAL TOGGLE SETUP =====
+function setupModalToggle() {
+    console.log('Setting up modal toggle');
+    
+    const expenseToggle = document.getElementById('expenseToggleBtn');
+    const incomeToggle = document.getElementById('incomeToggleBtn');
+    const savingsToggle = document.getElementById('savingsToggleBtn');
+    const cancelBtn = document.getElementById('cancelAddTransaction');
+    
+    // Remove any existing listeners and add fresh ones
+    if (expenseToggle) {
+        const newExpenseToggle = expenseToggle.cloneNode(true);
+        if (expenseToggle.parentNode) {
+            expenseToggle.parentNode.replaceChild(newExpenseToggle, expenseToggle);
+        }
+        
+        newExpenseToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Expense toggle clicked');
+            showExpenseForm();
+        });
+        console.log('Expense toggle setup complete');
     }
     
     if (incomeToggle) {
-        incomeToggle.addEventListener('click', showIncomeForm);
+        const newIncomeToggle = incomeToggle.cloneNode(true);
+        if (incomeToggle.parentNode) {
+            incomeToggle.parentNode.replaceChild(newIncomeToggle, incomeToggle);
+        }
+        
+        newIncomeToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Income toggle clicked');
+            showIncomeForm();
+        });
+        console.log('Income toggle setup complete');
+    }
+    
+    if (savingsToggle) {
+        const newSavingsToggle = savingsToggle.cloneNode(true);
+        if (savingsToggle.parentNode) {
+            savingsToggle.parentNode.replaceChild(newSavingsToggle, savingsToggle);
+        }
+        
+        newSavingsToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Savings toggle clicked');
+            showSavingsForm();
+        });
+        console.log('Savings toggle setup complete');
+    }
+    
+    // Setup cancel button
+    if (cancelBtn) {
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        if (cancelBtn.parentNode) {
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        }
+        
+        newCancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Cancel button clicked');
+            closeAddTransactionModal();
+        });
+        console.log('Cancel button setup complete');
     }
 }
 
 // ===== INITIALIZE APP =====
 async function initializeApp(user) {
+    console.log('Initializing app for user:', user.id);
     try {
         await loadBudget(user.id);
         await loadExpenses(user.id);
         await loadIncomes(user.id);
         await loadSavingsTargets(user.id);
-        await loadBudgetAllocations(user.id); // Load saved budget allocations
+        await loadBudgetAllocations(user.id);
         await displayUserName(user.id);
         
         setMonthFromLatestExpense();
         updateMonthDisplay();
         updateDashboard();
+        
         setupEventListeners();
         setupTabNavigation();
         setupLockIcon();
         setupBudgetCardLocks();
+        
+        // Setup modal toggles (this now includes cancel button)
         setupModalToggle();
         
-        const cancelBtn = document.getElementById('cancelAddTransaction');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', closeAddTransactionModal);
-        }
-        
+        // Setup modal overlay click
         const modal = document.getElementById('addTransactionModal');
         if (modal) {
+            // Don't clone the modal as it contains the toggles we just set up
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     closeAddTransactionModal();
@@ -1542,7 +1777,7 @@ async function initializeApp(user) {
         
         setupLogoutButton();
         
-        console.log('App initialized successfully with MONTHLY_BUDGET:', MONTHLY_BUDGET);
+        console.log('App initialization complete');
     } catch (error) {
         console.error('Error initializing app:', error);
     }

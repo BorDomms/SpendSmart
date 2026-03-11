@@ -12,11 +12,9 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0;
     transition: background 0.3s ease;
 }
 
-/* ===== MAIN APP CONTAINER ===== */
 .app {
     max-width: 1400px;
     width: 100%;
@@ -25,7 +23,7 @@ body {
     padding-bottom: 80px;
 }
 
-/* ===== TAB CONTENT STYLES ===== */
+/* ===== TAB CONTENT ===== */
 .tab-content {
     display: none;
     flex-direction: column;
@@ -36,7 +34,7 @@ body {
     display: flex;
 }
 
-/* ===== HOME TAB GRID LAYOUT ===== */
+/* ===== HOME TAB ===== */
 .home-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -44,33 +42,12 @@ body {
     width: 100%;
 }
 
-.home-left {
+.home-left, .home-right {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.home-right {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* ===== HALF CARD STYLES ===== */
-.half-card {
-    padding: 12px;
-}
-
-.half-card .progress-container {
-    height: 20px;
-    margin: 8px 0;
-}
-
-.half-card .stats-row {
-    font-size: 12px;
-}
-
-/* ===== CARD ROW LAYOUT ===== */
 .card-row {
     display: flex;
     gap: 20px;
@@ -82,93 +59,154 @@ body {
     min-width: 0;
 }
 
-/* ===== SAVINGS CARD STYLES ===== */
-.savings-display-large {
+/* ===== UNIVERSAL CARD STYLES (SINGLE SOURCE OF TRUTH) ===== */
+.card {
+    background: #282d31;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: 700;
-    color: #edb458;
-    padding: 8px 0 3px;
-    text-align: center;
+    flex-direction: column;
+    gap: 6px;
+    height: fit-content;
 }
 
-.savings-display-large #savingsAmount {
-    font-size: 24px;
-}
-
-.savings-progress {
-    height: 20px !important;
-    margin: 8px 0 !important;
-}
-
-.savings-bar {
-    background: linear-gradient(90deg, #edb458 0%, #f7d44a 100%);
-}
-
-/* ===== AMOUNT DISPLAY STYLES ===== */
-.amount-display-large {
+.card-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: 700;
-    padding: 8px 0 3px;
-    text-align: center;
+    margin-bottom: 4px;
 }
 
-.budget-display .budget-amount {
-    font-size: 24px;
-    color: #9d4edd;
-}
-
-.spent-display .spent-amount {
-    font-size: 24px;
-    color: #f56565;
-}
-
-/* ===== MONTH SELECTOR CARD STYLES ===== */
-.month-display-large {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: 700;
+.card-header h2,
+.card-header h3 {
+    font-family: 'Supreme', sans-serif;
+    font-weight: 900;
+    font-size: 18px;
     color: #f8f9fa;
-    padding: 8px 0 3px;
+    margin: 0;
+}
+
+.card-header i {
+    font-size: 18px;
+}
+
+.card-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.card-icon {
+    font-size: 18px;
+}
+
+.card-percentage {
+    font-family: 'Satoshi', sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    color: #a0aec0;
+}
+
+.card-amount-display {
     text-align: center;
-    min-height: 50px;
+    margin: 4px 0;
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
 }
 
-.month-display-large #currentMonth {
+.card-amount {
+    font-family: 'Satoshi', sans-serif;
     font-size: 24px;
-    font-weight: 600;
-    color: #f8f9fa;
+    font-weight: 700;
 }
 
+.card-amount.editable {
+    text-decoration: underline dashed #9d4edd;
+    text-underline-offset: 4px;
+    cursor: pointer;
+}
+
+.card-separator {
+    color: #a0aec0;
+    font-size: 16px;
+    margin: 0 3px;
+    font-family: 'Satoshi', sans-serif;
+}
+
+.card-total {
+    color: #a0aec0;
+    font-size: 16px;
+    font-weight: 400;
+    font-family: 'Satoshi', sans-serif;
+}
+
+.card-progress {
+    margin: 4px 0;
+}
+
+.progress-container {
+    width: 100%;
+    height: 20px;
+    background: #343a40;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0;
+}
+
+.progress-bar {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+/* Color variants - ONLY these differ per card type */
+.budget-primary .card-amount { color: #9d4edd; }
+.spent-primary .card-amount { color: #f56565; }
+.savings-primary .card-amount { color: #edb458; }
+.category-primary .card-amount { color: #9d4edd; }
+.remaining-primary .card-amount { color: #48bb78; }
+
+/* Progress bar colors */
+.budget-bar { background: linear-gradient(90deg, #7b2cbf 0%, #c77dff 100%); }
+.spent-bar { background: linear-gradient(90deg, #c53030 0%, #f56565 100%); }
+.savings-bar { background: linear-gradient(90deg, #edb458 0%, #f7d44a 100%); }
+.category-bar { background: linear-gradient(90deg, #7b2cbf 0%, #c77dff 100%); }
+.remaining-bar { background: linear-gradient(90deg, #48bb78 0%, #68d391 100%); }
+
+.card-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #a0aec0;
+    font-family: 'Satoshi', sans-serif;
+    margin-top: 5px;
+}
+
+/* ===== MONTH SELECTOR CARD ===== */
 .month-nav-container {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 20px;
-    padding: 3px 0;
+    margin-top: 8px;
 }
 
 .month-nav {
     background: none;
     border: none;
-    font-size: 18px;
+    font-size: 18 px;
     cursor: pointer;
     color: #0466c8;
     font-weight: bold;
     padding: 6px 12px;
-    transition: all 0.2s ease;
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: auto;
-    border-radius: 8px;
+    transition: all 0.2s ease;
 }
 
 .month-nav:hover {
@@ -180,16 +218,118 @@ body {
 .month-nav i {
     font-size: 18px;
 }
+.card[data-type="month"] .card-amount,
+#currentMonth {
+    color: #f8f9fa !important;
+    font-family: 'Supreme', sans-serif;
+    font-weight: 600;
+    font-size: 32px;
+    padding: 11px 0;
+}
 
-.savings-month-container {
+/* ===== BUDGETS TAB LAYOUT ===== */
+.budgets-top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+}
+
+/* Hide percentage for bills if needed */
+[data-category="Bills"] .card-percentage {
     display: none;
 }
 
-/* ===== TOP NAVIGATION BAR STYLES ===== */
+/* ===== SAVINGS TAB LAYOUT ===== */
+.savings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    width: 100%;
+}
+
+/* Savings goal specific styles */
+.savings-goal-name {
+    font-family: 'Supreme', sans-serif;
+    font-weight: 900;
+    font-size: 16px;
+    color: #f8f9fa;
+    margin: 0;
+}
+
+.savings-goal-current,
+.savings-goal-target-stat {
+    font-family: 'Satoshi', sans-serif;
+}
+
+.savings-goal-source {
+    font-size: 11px;
+    color: #a0aec0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+    font-family: 'Satoshi', sans-serif;
+}
+
+.savings-goal-source i {
+    color: #9d4edd;
+    font-size: 10px;
+}
+
+/* ===== LOCK ICONS ===== */
+.card-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lock-icon {
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #0466c8;
+}
+
+.lock-icon.unlocked {
+    color: #c53030;
+}
+
+.lock-icon:hover {
+    color: #4361ee;
+    transform: scale(1.2);
+}
+
+.lock-icon.unlocked:hover {
+    color: #ff5153;
+}
+
+.delete-icon {
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #c53030;
+    opacity: 0.7;
+}
+
+.delete-icon:hover {
+    color: #f56565;
+    transform: scale(1.2);
+    opacity: 1;
+}
+
+/* ===== TOP NAVIGATION ===== */
 .top-nav {
     width: 100%;
     background: #212529;
-    padding: 0;
 }
 
 .nav-container {
@@ -202,11 +342,19 @@ body {
     height: 50px;
 }
 
+.nav-left, .nav-right {
+    min-width: 120px;
+}
+
 .nav-left {
     display: flex;
     align-items: center;
     gap: 10px;
-    min-width: 120px;
+}
+
+.nav-right {
+    display: flex;
+    justify-content: flex-end;
 }
 
 .user-name {
@@ -218,25 +366,12 @@ body {
     padding: 5px 15px;
     border-radius: 30px;
     white-space: nowrap;
-    overflow: visible;
-    max-width: none;
-    transition: all 0.2s ease;
     cursor: default;
-    position: relative;
-}
-
-.user-name .full-name {
-    display: inline;
-}
-
-.user-name .first-name {
-    display: none;
 }
 
 .user-name i {
     margin-right: 8px;
     color: #9d4edd;
-    font-size: 14px;
 }
 
 .nav-center {
@@ -262,13 +397,6 @@ body {
     font-size: 20px;
 }
 
-.nav-right {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    min-width: 120px;
-}
-
 .logout-btn {
     background: #c53030;
     color: white;
@@ -281,9 +409,9 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.3s;
     height: 40px;
     white-space: nowrap;
+    transition: all 0.3s;
 }
 
 .logout-btn:hover {
@@ -292,169 +420,7 @@ body {
     box-shadow: 0 4px 12px rgba(245, 101, 101, 0.3);
 }
 
-.logout-btn i {
-    font-size: 14px;
-}
-
-/* ===== GENERAL CARD STYLES ===== */
-.card {
-    background: #282d31;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    height: fit-content;
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.card h2 {
-    font-family: 'Supreme', sans-serif;
-    font-weight: 900;
-    font-size: 16px;
-    color: #f8f9fa;
-}
-
-/* ===== EXPENSE & INCOME COUNTER STYLES ===== */
-.expense-count, .income-count {
-    color: #f8f9fa;
-    font-weight: 500;
-    font-size: 12px;
-    background: #343a40;
-    padding: 3px 10px;
-    border-radius: 20px;
-}
-
-/* ===== LOCK ICON STYLES ===== */
-#budgetLockIcon {
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: #0466c8;
-    margin-left: 8px;
-}
-
-#budgetLockIcon.unlocked {
-    color: #c53030;
-}
-
-#budgetLockIcon:hover {
-    color: #4361ee;
-    transform: scale(1.2);
-}
-
-#budgetLockIcon.unlocked:hover {
-    color: #ff5153;
-    transform: scale(1.2);
-}
-
-/* ===== BUDGET CARD LOCK ICON STYLES ===== */
-.budget-card-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.budget-lock-icon {
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: #0466c8;
-}
-
-.budget-lock-icon.unlocked {
-    color: #c53030;
-}
-
-.budget-lock-icon:hover {
-    color: #4361ee;
-    transform: scale(1.2);
-}
-
-.budget-lock-icon.unlocked:hover {
-    color: #ff5153;
-    transform: scale(1.2);
-}
-
-/* Amount gets underlined when unlocked */
-.budget-amount.editable {
-    text-decoration: underline;
-    text-decoration-style: dashed;
-    text-decoration-color: #9d4edd;
-    text-underline-offset: 4px;
-    cursor: pointer;
-}
-
-/* Percentage text styling - same as before */
-.budget-percentage {
-    font-family: 'Satoshi', sans-serif;
-    font-weight: 400;
-    font-size: 11px;
-    color: #a0aec0;
-    background: none;
-    padding: 0;
-    border-radius: 0;
-    text-decoration: none !important;
-}
-
-/* Input styling - match the total allocated amount font (Satoshi) */
-.budget-amount-input {
-    font-size: 16px;
-    font-weight: 400;
-    color: #a0aec0;
-    border: 2px solid #9d4edd;
-    border-radius: 8px;
-    background: #282d31;
-    padding: 2px 6px;
-    width: 100px;
-    outline: none;
-    text-align: center;
-    font-family: 'Satoshi', sans-serif; /* Changed from Chillax to Satoshi */
-    margin: 0;
-    line-height: 1.2;
-}
-
-.budget-amount-input:focus {
-    border-color: #7b2cbf;
-}
-
-/* ===== BUDGET AMOUNT STYLES ===== */
-.budget-amount {
-    font-size: inherit;
-    font-weight: inherit;
-    color: inherit;
-    transition: all 0.2s ease;
-}
-
-.budget-amount.editable {
-    text-decoration: underline;
-    text-decoration-style: dashed;
-    text-decoration-color: #9d4edd;
-    text-underline-offset: 4px;
-    cursor: pointer;
-}
-
-.budget-input {
-    font-size: 11px;
-    font-weight: bold;
-    color: #9d4edd;
-    border: 2px solid #9d4edd;
-    border-radius: 8px;
-    background: #282d31;
-    padding: 4px 8px;
-    width: 100px;
-    outline: none;
-}
-
-.budget-input:focus {
-    border-color: #7b2cbf;
-}
-
-/* ===== PROGRESS BAR STYLES ===== */
+/* ===== PROGRESS BARS ===== */
 .progress-container {
     width: 100%;
     height: 20px;
@@ -469,13 +435,12 @@ body {
     transition: width 0.3s ease;
 }
 
-.budget-bar {
-    background: linear-gradient(90deg, #7b2cbf 0%, #c77dff 100%);
-}
-
-.spent-bar {
-    background: linear-gradient(90deg, #c53030 0%, #f56565 100%);
-}
+/* Bar variants */
+.budget-bar { background: linear-gradient(90deg, #7b2cbf 0%, #c77dff 100%); }
+.spent-bar { background: linear-gradient(90deg, #c53030 0%, #f56565 100%); }
+.savings-bar { background: linear-gradient(90deg, #edb458 0%, #f7d44a 100%); }
+.category-bar { background: linear-gradient(90deg, #7b2cbf 0%, #c77dff 100%); }
+.remaining-bar { background: linear-gradient(90deg, #48bb78 0%, #68d391 100%); }
 
 .stats-row {
     display: flex;
@@ -483,415 +448,65 @@ body {
     color: #dee2e6;
     font-size: 12px;
     font-family: 'Satoshi', sans-serif;
-    font-weight: 400;
 }
 
-.spent-amount {
-    font-size: 18px;
-    font-weight: bold;
-    color: #f56565;
-}
-
-/* ===== SAVINGS GOALS STYLES ===== */
-.goals-list {
-    margin: 15px 0;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.goal-item {
-    background: #343a40;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 10px;
-}
-
-.goal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.goal-name {
-    font-weight: 600;
-    color: #f8f9fa;
-    font-size: 16px;
-}
-
-.goal-amount {
-    color: #edb458;
-    font-weight: 600;
-}
-
-.goal-progress {
-    margin: 10px 0 5px;
-}
-
-.goal-progress .progress-container {
-    height: 8px;
-    background: #212529;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.goal-progress .progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #7b2cbf 0%, #c77dff 100%);
-}
-
-.goal-stats {
-    display: flex;
-    justify-content: space-between;
-    color: #dee2e6;
-    font-size: 12px;
-}
-
-.goal-source {
-    font-size: 11px;
-    color: #a0aec0;
-    margin-top: 5px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.goal-source i {
-    color: #9d4edd;
-    font-size: 10px;
-}
-
-/* ===== PLACEHOLDER CARD STYLES ===== */
-.placeholder-card {
-    background: linear-gradient(135deg, #282d31 0%, #2d3338 100%);
-    border: 2px dashed #4a5568;
-    min-height: 150px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: none;
-    cursor: default;
-}
-
-.placeholder-card:hover {
-    border-color: #4a5568;
-    transform: none;
-}
-
-.placeholder-content {
-    text-align: center;
-    padding: 20px;
-}
-
-.placeholder-icon {
-    font-size: 40px;
-    color: #4a5568;
-    margin-bottom: 15px;
-}
-
-.placeholder-content h3 {
-    color: #f8f9fa;
-    font-size: 18px;
-    margin-bottom: 8px;
-    font-family: 'Supreme', sans-serif;
-}
-
-.placeholder-content p {
-    color: #a0aec0;
-    font-size: 14px;
-}
-
-.placeholder-card:hover .placeholder-icon {
-    color: #4a5568;
-}
-
-.placeholder-card:hover h3 {
-    color: #f8f9fa;
-}
-
-.placeholder-card:hover p {
-    color: #a0aec0;
-}
-
-/* ===== ADD GOAL CARD STYLES ===== */
-.add-goal-card {
-    background: #282d31;
-}
-
-.goal-form-compact {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.goal-form-compact .form-group {
-    margin-bottom: 0;
-}
-
-.goal-form-compact label {
-    display: inline-block;
-    background: #0466c8;
-    padding: 2px 10px;
-    border-radius: 30px;
-    margin-bottom: 5px;
-    color: #e9ecef;
-    font-size: 11px;
-    font-family: 'Satoshi', sans-serif;
-    font-weight: 600;
-}
-
-.goal-form-compact .btn-create {
-    width: 100%;
-    margin-top: 8px;
-}
-
-/* ===== MODAL STYLES ===== */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
-    z-index: 2000;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.bottom-sheet {
-    background: #282d31;
-    width: 100%;
-    max-width: 600px;
-    border-radius: 30px 30px 0 0;
-    padding: 20px;
-    transform: translateY(0);
-    animation: slideUp 0.3s ease;
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
-    min-height: 400px; /* Add minimum height to prevent shifting */
-}
-
-.bottom-sheet-handle {
-    width: 40px;
-    height: 4px;
-    background: #4a5568;
-    border-radius: 2px;
-    margin: 0 auto 20px;
-}
-
-/* ===== TRANSACTION TOGGLE HEADER STYLES ===== */
-.transaction-toggle-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 20px;
-    padding: 0 10px;
-    min-height: 60px; /* Add fixed height to prevent movement */
-}
-
-.toggle-option {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px 0;
-    transition: all 0.3s ease;
-    flex: 0 1 auto;
-    height: 100%; /* Ensure consistent height */
-}
-
-.toggle-option .toggle-text {
-    font-family: 'Supreme', sans-serif; /* Changed from Chillax to Supreme to match home tab headers */
-    font-weight: 900; /* Match home tab header weight */
-    font-size: 24px;
-    transition: all 0.3s ease;
-    line-height: 1.2; /* Add fixed line height */
-}
-
-#expenseToggleBtn .toggle-text {
-    color: #f56565;
-}
-
-#expenseToggleBtn.active .toggle-text {
-    font-size: 28px;
-    color: #f56565;
-    /* Removed text-shadow glow */
-}
-
-#expenseToggleBtn:not(.active) .toggle-text {
-    font-size: 20px;
-    color: #718096;
-    opacity: 0.6;
-}
-
-#incomeToggleBtn .toggle-text {
-    color: #48bb78;
-}
-
-#incomeToggleBtn.active .toggle-text {
-    font-size: 28px;
-    color: #48bb78;
-    /* Removed text-shadow glow */
-}
-
-#incomeToggleBtn:not(.active) .toggle-text {
-    font-size: 20px;
-    color: #718096;
-    opacity: 0.6;
-}
-
-.toggle-option:hover .toggle-text {
-    opacity: 0.8;
-    transform: scale(1.05);
-}
-
-.toggle-option.active:hover .toggle-text {
-    opacity: 1;
-}
-
-@keyframes slideUp {
-    from {
-        transform: translateY(100%);
-    }
-    to {
-        transform: translateY(0);
-    }
-}
-
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.modal-actions .btn-cancel,
-.modal-actions .btn-add {
-    flex: 1;
-}
-
-/* ===== FORM STYLES ===== */
-.expense-form,
-.income-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.form-row {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.form-group {
-    flex: 1;
-    min-width: 180px;
-}
-
-.form-group label {
-    display: inline-block;
-    background: #0466c8;   
-    padding: 2px 12px;
-    border-radius: 30px;
-    margin-bottom: 5px;
-    color: #e9ecef;
-    font-size: 12px;
-    font-family: 'Satoshi', sans-serif;
-    font-weight: 600;
-}
-
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 8px 10px;
-    color: #dee2e6;
-    border: 2px solid #343a40;
-    background: #343a40;
+/* ===== INPUT STYLES - Consolidated ===== */
+.budget-input,
+.budget-amount-input,
+.savings-amount-input {
     border-radius: 8px;
-    font-family: 'Supreme', sans-serif;
-    font-weight: 300;
-    font-size: 13px;
-    transition: border-color 0.2s;
-}
-
-.form-group input:focus,
-.form-group select:focus {
+    background: #282d31;
+    padding: 4px 8px;
     outline: none;
-    border-color: #0466c8;
+    text-align: center;
+    font-family: 'Satoshi', sans-serif;
+    border: 2px solid;
 }
 
-/* ===== BUTTON STYLES ===== */
-.btn-add {
-    background: #9d4edd;
-    color: #f8f9fa;
-    border: none;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
+.budget-input {
+    font-size: 11px;
+    font-weight: bold;
+    color: #9d4edd;
+    border-color: #9d4edd;
+    width: 100px;
+}
+
+.budget-amount-input {
+    font-size: 16px;
+    font-weight: 400;
+    color: #a0aec0;
+    border-color: #9d4edd;
+    width: 100px;
+}
+
+.savings-amount-input {
+    font-size: 18px;
+    font-weight: 700;
+    color: #edb458;
+    border-color: #edb458;
+    width: 120px;
+}
+
+.budget-amount-input:focus,
+.savings-amount-input:focus,
+.budget-input:focus {
+    border-color: #7b2cbf;
+}
+
+/* ===== LISTS ===== */
+.list-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+}
+
+.list-left, .list-right {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: transform 0.2s;
+    flex-direction: column;
+    gap: 20px;
 }
 
-.btn-add:hover {
-    transform: translateY(-2px);
-}
-
-.btn-cancel {
-    background: #4a5568;
-    color: #e9ecef;
-    border: none;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s;
-}
-
-.btn-cancel:hover {
-    background: #718096;
-}
-
-.btn-create {
-    background: #9d4edd;
-    color: #f8f9fa;
-    border: none;
-    padding: 10px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: all 0.2s;
-}
-
-.btn-create:hover {
-    background: #7b2cbf;
-    transform: translateY(-2px);
-}
-
-/* ===== PAYMENT METHOD BADGE STYLES ===== */
-.payment-method-badge {
-    font-size: 14px;
-    margin-left: 8px;
-    cursor: help;
-}
-
-/* ===== EXPENSES & INCOMES LIST STYLES ===== */
 .expenses-list, .incomes-list {
     max-height: 350px;
     overflow-y: auto;
@@ -928,23 +543,21 @@ body {
 }
 
 .expense-category {
-    font-weight: 600;
-    color: #f8f9fa;
     background: #9d4edd;
     padding: 2px 6px;
     border-radius: 10px;
-    display: inline-block;
     font-size: 12px;
+    font-weight: 600;
+    color: #f8f9fa;
 }
 
 .income-category {
-    font-weight: 600;
-    color: #f8f9fa;
     background: #48bb78;
     padding: 2px 6px;
     border-radius: 10px;
-    display: inline-block;
     font-size: 12px;
+    font-weight: 600;
+    color: #f8f9fa;
 }
 
 .expense-amount {
@@ -987,28 +600,6 @@ body {
     transform: scale(1.2);
 }
 
-.empty-state {
-    text-align: center;
-    padding: 20px;
-    color: #a0aec0;
-    font-size: 14px;
-}
-
-/* ===== LIST TAB GRID LAYOUT ===== */
-.list-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    width: 100%;
-}
-
-.list-left,
-.list-right {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
 .list-total {
     display: flex;
     justify-content: space-between;
@@ -1019,144 +610,225 @@ body {
     color: #f8f9fa;
 }
 
-/* ===== BUDGETS TAB LAYOUT ===== */
-.budgets-top-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    width: 100%;
-    margin-bottom: 15px;
+.expense-count, .income-count {
+    color: #f8f9fa;
+    font-weight: 500;
+    font-size: 12px;
+    background: #343a40;
+    padding: 3px 10px;
+    border-radius: 20px;
 }
 
-.categories-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+/* ===== MODAL ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-}
-
-/* ===== BUDGET CARD STYLES ===== */
-.budget-card {
-    background: #282d31;
-    border-radius: 12px;
-    padding: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 2000;
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-    transition: none;
+    align-items: flex-end;
+    justify-content: center;
 }
 
-.budget-card:hover {
-    transform: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+.bottom-sheet {
+    background: #282d31;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 30px 30px 0 0;
+    padding: 20px;
+    animation: slideUp 0.3s ease;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+    min-height: 400px;
 }
 
-.budget-card-header {
+.bottom-sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: #4a5568;
+    border-radius: 2px;
+    margin: 0 auto 20px;
+}
+
+.bottom-sheet-content {
+    min-height: 450px;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+/* ===== TOGGLE BUTTONS ===== */
+.transaction-toggle-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 4px;
+    margin-bottom: 20px;
+    padding: 0 10px;
+    width: 100%;
 }
 
-.category-info {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+.toggle-option {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+    flex: 1;
+    text-align: center;
+    position: relative;
+    z-index: 10;
 }
 
-.category-icon {
-    font-size: 18px;
-}
-
-.budget-card h3 {
+.toggle-option .toggle-text {
     font-family: 'Supreme', sans-serif;
     font-weight: 900;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+#expenseToggleBtn .toggle-text { 
+    color: #f56565; 
+}
+
+#incomeToggleBtn .toggle-text { 
+    color: #48bb78; 
+}
+
+#savingsToggleBtn .toggle-text { 
+    color: #edb458; 
+}
+
+.toggle-option.active .toggle-text {
+    font-size: 26px;
+    opacity: 1;
+}
+
+.toggle-option:not(.active) .toggle-text {
     font-size: 18px;
-    color: #f8f9fa;
-    margin: 0;
+    color: #718096 !important;
+    opacity: 0.6;
 }
 
-.budget-percentage {
+.toggle-option:hover .toggle-text {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+.toggle-option.active:hover .toggle-text {
+    opacity: 1;
+}
+
+/* ===== FORMS ===== */
+.transaction-form {
+    min-height: 400px;
+}
+
+.form-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.form-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.full-width .form-group {
+    min-width: 100%;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 180px;
+}
+
+.form-group label {
+    display: inline-block;
+    background: #0466c8;
+    padding: 2px 12px;
+    border-radius: 30px;
+    margin-bottom: 5px;
+    color: #e9ecef;
+    font-size: 12px;
     font-family: 'Satoshi', sans-serif;
-    font-weight: 400;
-    font-size: 11px;
-    color: #a0aec0; /* Dimmer white color */
-    background: none; /* Remove purple background */
-    padding: 0; /* Remove padding */
-    border-radius: 0; /* Remove border radius */
+    font-weight: 600;
 }
 
-/* Hide percentage on bills category */
-.category-card[data-category="Bills"] .budget-percentage {
-    display: none;
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px 10px;
+    color: #dee2e6;
+    border: 2px solid #343a40;
+    background: #343a40;
+    border-radius: 8px;
+    font-family: 'Supreme', sans-serif;
+    font-size: 13px;
+    transition: border-color 0.2s;
 }
 
-.budget-amount-display {
-    text-align: center;
-    margin: 4px 0;
-    font-size: 20px;
-    font-weight: 700;
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #0466c8;
 }
 
-.budget-allocated {
-    font-family: 'Chillax', sans-serif;
-    font-size: 24px;
-    font-weight: 700;
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-actions .btn-cancel,
+.modal-actions .btn-add {
+    flex: 1;
+}
+
+/* ===== BUTTONS ===== */
+.btn-add, .btn-cancel {
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btn-add {
+    background: #9d4edd;
     color: #f8f9fa;
 }
 
-.category-card .budget-allocated {
-    color: #9d4edd;
+.btn-add:hover {
+    transform: translateY(-2px);
 }
 
-/* Remaining amount is purple */
-.budget-amount-display .remaining-part {
-    color: #9d4edd;
-    font-size: 24px;
+.btn-cancel {
+    background: #4a5568;
+    color: #e9ecef;
 }
 
-.budget-amount-display .separator {
-    color: #a0aec0;
-    font-size: 16px;
-    margin: 0 3px;
+.btn-cancel:hover {
+    background: #718096;
 }
 
-.budget-amount-display .total-part {
-    color: #a0aec0;
-    font-size: 16px;
-}
-
-.budget-progress {
-    margin: 4px 0;
-}
-
-.budget-progress .progress-container {
-    height: 20px;
-    background: #343a40;
-    border-radius: 10px;
-    overflow: hidden;
-    margin: 0;
-}
-
-.category-bar {
-    background: linear-gradient(90deg, #7b2cbf 0%, #c77dff 100%);
-}
-
-.savings-bar {
-    background: linear-gradient(90deg, #edb458 0%, #f7d44a 100%);
-}
-
-.remaining-bar {
-    background: linear-gradient(90deg, #48bb78 0%, #68d391 100%);
-}
-
-/* Remove all bottom text from budget cards */
-.budget-stats {
-    display: none;
-}
-
-/* ===== BOTTOM NAVIGATION FOOTER STYLES ===== */
+/* ===== BOTTOM NAVIGATION ===== */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -1181,7 +853,6 @@ body {
     max-width: 600px;
     width: 100%;
     pointer-events: auto;
-    margin: 0 auto;
 }
 
 .footer-btn {
@@ -1195,9 +866,9 @@ body {
     align-items: center;
     gap: 3px;
     padding: 6px 10px;
-    transition: all 0.2s ease;
     border-radius: 8px;
     min-width: 50px;
+    transition: all 0.2s ease;
 }
 
 .footer-btn i {
@@ -1244,409 +915,318 @@ body {
     transform: translateY(-16px) scale(1.05);
 }
 
-/* ===== RESPONSIVE DESIGN - TABLET ===== */
+/* ===== PLACEHOLDERS & EMPTY STATES ===== */
+.empty-state {
+    text-align: center;
+    padding: 20px;
+    color: #a0aec0;
+    font-size: 14px;
+}
+
+.placeholder-card {
+    background: linear-gradient(135deg, #282d31 0%, #2d3338 100%);
+    border: 2px dashed #4a5568;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.placeholder-content {
+    text-align: center;
+    padding: 20px;
+}
+
+.placeholder-icon {
+    font-size: 40px;
+    color: #4a5568;
+    margin-bottom: 15px;
+}
+
+.placeholder-content h3 {
+    color: #f8f9fa;
+    font-size: 18px;
+    margin-bottom: 8px;
+    font-family: 'Supreme', sans-serif;
+}
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
-    .categories-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .categories-grid { 
+        grid-template-columns: repeat(2, 1fr); 
     }
 }
 
-/* ===== RESPONSIVE DESIGN - MOBILE ===== */
 @media (max-width: 768px) {
-    .app {
-        padding: 10px;
-        padding-bottom: 80px;
+    .app { 
+        padding: 10px; 
+        padding-bottom: 80px; 
     }
     
-    .home-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
+    .home-grid { 
+        grid-template-columns: 1fr; 
+        gap: 15px; 
     }
     
-    .home-left {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
+    .home-left { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 10px; 
     }
     
-    .list-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
+    .list-grid { 
+        grid-template-columns: 1fr; 
+        gap: 15px; 
     }
     
-    .budgets-top-row {
-        grid-template-columns: 1fr;
-        gap: 12px;
-        margin-bottom: 12px;
+    .savings-grid { 
+        grid-template-columns: 1fr; 
+        gap: 12px; 
     }
     
-    .categories-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+    .budgets-top-row { 
+        grid-template-columns: 1fr; 
+        gap: 12px; 
+        margin-bottom: 12px; 
     }
     
-    .card-row {
-        display: contents;
+    .categories-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 10px; 
     }
     
-    .half-card {
-        padding: 10px;
+    .card-row { 
+        display: contents; 
     }
     
-    .half-card .progress-container {
-        height: 16px;
-        margin: 6px 0;
+    .card { 
+        padding: 10px; 
     }
     
-    .savings-display-large {
-        padding: 5px 0 2px;
+    .card-header h2, 
+    .card-header h3 { 
+        font-size: 13px; 
     }
     
-    .savings-display-large #savingsAmount {
-        font-size: 20px;
+    .card-amount { 
+        font-size: 20px; 
     }
     
-    .savings-progress {
-        height: 16px !important;
-        margin: 6px 0 !important;
+    .card-total { 
+        font-size: 14px; 
     }
     
-    .amount-display-large {
-        font-size: 18px;
-        padding: 5px 0 2px;
+    .card-separator { 
+        font-size: 14px; 
     }
     
-    .budget-display .budget-amount,
-    .spent-display .spent-amount {
-        font-size: 20px;
+    .progress-container { 
+        height: 16px; 
+        margin: 6px 0; 
     }
     
-    .month-display-large {
-        font-size: 18px;
-        padding: 5px 0 2px;
-        min-height: 40px;
+    .stats-row { 
+        font-size: 11px; 
     }
     
-    .month-display-large #currentMonth {
-        font-size: 20px;
+    .month-nav { 
+        font-size: 16px; 
+        padding: 4px 8px; 
     }
     
-    .month-nav-container {
-        gap: 12px;
-        padding: 2px 0;
+    .month-nav i { 
+        font-size: 16px; 
     }
-    
-    .month-nav {
-        font-size: 16px;
-        padding: 4px 8px;
-    }
-    
-    .month-nav i {
-        font-size: 16px;
-    }
-    
-    .progress-container {
-        height: 16px;
-        margin: 6px 0;
-    }
-    
-    .half-card .progress-container {
-        height: 16px;
-    }
-    
-    .stats-row {
-        font-size: 11px;
-    }
-    
-    .toggle-option .toggle-text {
-        font-size: 22px;
-    }
-    
-    #expenseToggleBtn.active .toggle-text,
-    #incomeToggleBtn.active .toggle-text {
-        font-size: 26px;
-    }
-    
-    #expenseToggleBtn:not(.active) .toggle-text,
-    #incomeToggleBtn:not(.active) .toggle-text {
-        font-size: 18px;
-    }
-    
-    .budget-card {
-        padding: 10px;
-    }
-    
-    .budget-card h3 {
-        font-size: 13px;
-    }
-    
-    .budget-allocated {
-        font-size: 20px;
-    }
-    
-    .budget-amount-display .remaining-part {
-        font-size: 20px;
-    }
-    
-    .budget-amount-display .separator,
-    .budget-amount-display .total-part {
-        font-size: 14px;
-    }
-    
-    .budget-progress .progress-container {
-        height: 16px;
-    }
-    
-    .nav-center {
-        display: none;
-    }
-    
-    .nav-container {
-        justify-content: space-between;
-    }
-    
-    .nav-left {
-        min-width: auto;
-        flex: 1;
-    }
-    
-    .nav-right {
-        min-width: auto;
-    }
-    
-    .user-name {
-        max-width: none;
-        font-size: 12px;
-        padding: 4px 10px;
-    }
-    
-    .logout-btn {
-        padding: 5px 10px;
-        font-size: 11px;
-        gap: 4px;
-        height: 36px;
-    }
-    
-    .form-row {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .form-group {
-        min-width: 100%;
-    }
-    
-    .bottom-nav {
-        padding: 0 10px;
-    }
-    
-    .footer-container {
-        padding: 6px 15px;
-        border-radius: 25px 25px 0 0;
-    }
-    
-    .footer-btn {
-        min-width: 45px;
-        padding: 5px 6px;
-    }
-    
-    .footer-btn i {
-        font-size: 16px;
-    }
-    
-    .footer-btn.add-btn {
-        width: 48px;
-        height: 48px;
-    }
-    
-    .footer-btn.add-btn i {
-        font-size: 20px;
-    }
-}
 
-/* ===== RESPONSIVE DESIGN - SMALL MOBILE ===== */
-@media (max-width: 480px) {
-    .home-left {
-        gap: 8px;
-    }
-    
-    .half-card {
-        padding: 8px;
-    }
-    
-    .savings-display-large #savingsAmount {
-        font-size: 18px;
-    }
-    
-    .savings-progress {
-        height: 14px !important;
-    }
-    
-    .budget-display .budget-amount,
-    .spent-display .spent-amount {
-        font-size: 18px;
-    }
-    
-    .month-display-large #currentMonth {
-        font-size: 18px;
-    }
-    
-    .month-nav {
-        font-size: 14px;
-        padding: 3px 6px;
-    }
-    
-    .month-nav i {
-        font-size: 14px;
-    }
-    
-    .progress-container {
-        height: 14px;
-    }
-    
-    .half-card .progress-container {
-        height: 14px;
-    }
-    
-    .stats-row {
-        font-size: 10px;
-    }
-    
-    .toggle-option .toggle-text {
-        font-size: 20px;
-    }
-    
-    #expenseToggleBtn.active .toggle-text,
-    #incomeToggleBtn.active .toggle-text {
+    #currentMonth {
         font-size: 24px;
+        padding: 10px 0;
+        margin: 3px 0; 
     }
     
-    #expenseToggleBtn:not(.active) .toggle-text,
-    #incomeToggleBtn:not(.active) .toggle-text {
-        font-size: 16px;
+    .toggle-option .toggle-text { 
+        font-size: 20px; 
     }
     
-    .categories-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
+    .toggle-option.active .toggle-text { 
+        font-size: 24px; 
     }
     
-    .budget-card {
-        padding: 8px;
+    .toggle-option:not(.active) .toggle-text { 
+        font-size: 16px; 
     }
     
-    .budget-allocated {
-        font-size: 20px;
+    .nav-center { 
+        display: none; 
     }
     
-    .budget-amount-display .remaining-part {
-        font-size: 20px;
+    .nav-left, 
+    .nav-right { 
+        min-width: auto; 
     }
     
-    .budget-amount-display .separator,
-    .budget-amount-display .total-part {
-        font-size: 14px;
+    .user-name { 
+        font-size: 12px; 
+        padding: 4px 10px; 
     }
     
-    .budget-progress .progress-container {
-        height: 14px;
+    .logout-btn { 
+        padding: 5px 10px; 
+        font-size: 11px; 
+        gap: 4px; 
+        height: 36px; 
     }
     
-    .user-name {
-        font-size: 11px;
-        padding: 3px 8px;
+    .form-row { 
+        flex-direction: column; 
+        gap: 10px; 
     }
     
-    .user-name i {
-        margin-right: 4px;
-        font-size: 11px;
+    .form-group { 
+        min-width: 100%; 
+    }
+    
+    .bottom-nav { 
+        padding: 0 10px; 
+    }
+    
+    .footer-container { 
+        padding: 6px 15px; 
+        border-radius: 25px 25px 0 0; 
+    }
+    
+    .footer-btn { 
+        min-width: 45px; 
+        padding: 5px 6px; 
+    }
+    
+    .footer-btn i { 
+        font-size: 16px; 
+    }
+    
+    .footer-btn.add-btn { 
+        width: 48px; 
+        height: 48px; 
+    }
+    
+    .footer-btn.add-btn i { 
+        font-size: 20px; 
     }
 }
 
-/* ===== RESPONSIVE DESIGN - EXTRA SMALL MOBILE ===== */
+@media (max-width: 480px) {
+    .home-left { 
+        gap: 8px; 
+    }
+    
+    .card { 
+        padding: 8px; 
+    }
+    
+    .card-amount { 
+        font-size: 18px; 
+    }
+    
+    .card-total { 
+        font-size: 12px; 
+    }
+    
+    .card-separator { 
+        font-size: 12px; 
+    }
+    
+    .progress-container { 
+        height: 14px; 
+    }
+    
+    .stats-row { 
+        font-size: 10px; 
+    }
+    
+    .month-nav { 
+        font-size: 14px; 
+        padding: 3px 6px; 
+    }
+    
+    .month-nav i { 
+        font-size: 14px; 
+    }
+    
+    .toggle-option .toggle-text { 
+        font-size: 18px; 
+    }
+    
+    .toggle-option.active .toggle-text { 
+        font-size: 22px; 
+    }
+    
+    .toggle-option:not(.active) .toggle-text { 
+        font-size: 14px; 
+    }
+    
+    .categories-grid { 
+        grid-template-columns: 1fr; 
+        gap: 8px; 
+    }
+    
+    .user-name { 
+        font-size: 11px; 
+        padding: 3px 8px; 
+    }
+    
+    .user-name i { 
+        margin-right: 4px; 
+        font-size: 11px; 
+    }
+    
+    .footer-btn span { 
+        font-size: 9px; 
+    }
+}
+
 @media (max-width: 360px) {
-    .home-left {
-        gap: 5px;
+    .home-left { 
+        gap: 5px; 
     }
     
-    .half-card {
-        padding: 6px;
+    .card-amount { 
+        font-size: 16px; 
     }
     
-    .savings-display-large #savingsAmount {
-        font-size: 16px;
+    .progress-container { 
+        height: 12px; 
     }
     
-    .savings-progress {
-        height: 12px !important;
+    .stats-row { 
+        font-size: 9px; 
     }
     
-    .budget-display .budget-amount,
-    .spent-display .spent-amount {
-        font-size: 16px;
+    .month-nav { 
+        font-size: 12px; 
+        padding: 2px 4px; 
     }
     
-    .month-display-large #currentMonth {
-        font-size: 16px;
+    .month-nav i { 
+        font-size: 12px; 
     }
     
-    .month-nav {
-        font-size: 12px;
-        padding: 2px 4px;
+    .toggle-option .toggle-text { 
+        font-size: 16px; 
     }
     
-    .month-nav i {
-        font-size: 12px;
+    .toggle-option.active .toggle-text { 
+        font-size: 20px; 
     }
     
-    .progress-container {
-        height: 12px;
+    .toggle-option:not(.active) .toggle-text { 
+        font-size: 12px; 
     }
     
-    .half-card .progress-container {
-        height: 12px;
+    .footer-btn span { 
+        font-size: 9px; 
     }
     
-    .stats-row {
-        font-size: 9px;
-    }
-    
-    .toggle-option .toggle-text {
-        font-size: 18px;
-    }
-    
-    #expenseToggleBtn.active .toggle-text,
-    #incomeToggleBtn.active .toggle-text {
-        font-size: 22px;
-    }
-    
-    #expenseToggleBtn:not(.active) .toggle-text,
-    #incomeToggleBtn:not(.active) .toggle-text {
-        font-size: 14px;
-    }
-    
-    .budget-allocated {
-        font-size: 18px;
-    }
-    
-    .budget-amount-display .remaining-part {
-        font-size: 18px;
-    }
-    
-    .budget-amount-display .separator,
-    .budget-amount-display .total-part {
-        font-size: 12px;
-    }
-    
-    .budget-progress .progress-container {
-        height: 12px;
-    }
-    
-    .footer-btn span {
-        font-size: 9px;
-    }
-    
-    .footer-btn {
-        min-width: 40px;
+    .footer-btn { 
+        min-width: 40px; 
     }
 }

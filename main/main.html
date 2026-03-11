@@ -47,32 +47,34 @@
                 <div class="home-left">
                     <!-- Row 1: Savings and Month Selector (side by side) -->
                     <div class="card-row">
-                        <!-- Savings Card (half width) with progress bar -->
-                        <div class="card half-card savings-card">
+                        <!-- Savings Card (using universal card classes) -->
+                        <div class="card savings-primary">
                             <div class="card-header">
                                 <h2>Savings</h2>
                                 <i class="fa-solid fa-piggy-bank" style="color: #edb458;"></i>
                             </div>
-                            <div class="savings-display-large">
-                                <span id="savingsAmount">0.00</span>
+                            <div class="card-amount-display">
+                                <span class="card-amount" id="savingsAmount">0.00</span>
                             </div>
-                            <div class="progress-container savings-progress">
-                                <div class="progress-bar savings-bar" id="savingsProgressBar" style="width: 0%"></div>
+                            <div class="card-progress">
+                                <div class="progress-container">
+                                    <div class="progress-bar savings-bar" id="savingsProgressBar" style="width: 0%"></div>
+                                </div>
                             </div>
-                            <div class="stats-row savings-stats">
+                            <div class="card-stats">
                                 <span id="savingsProgressText">0% of goal</span>
                                 <span id="savingsRemaining">₱0 left</span>
                             </div>
                         </div>
                         
-                        <!-- Month Selector Card (half width) -->
-                        <div class="card half-card month-selector-card">
+                        <!-- Month Selector Card -->
+                        <div class="card" data-type="month">
                             <div class="card-header">
                                 <h2>Month</h2>
                                 <i class="fa-solid fa-calendar" style="color: #9d4edd;"></i>
                             </div>
-                            <div class="month-display-large">
-                                <span id="currentMonth">March 2026</span>
+                            <div class="card-amount-display">
+                                <span class="card-amount" id="currentMonth">March 2026</span>
                             </div>
                             <div class="month-nav-container">
                                 <button class="month-nav" id="prevMonth">
@@ -85,48 +87,54 @@
                         </div>
                     </div>
 
-                   <!-- Row 2: Monthly Budget and Spent This Month (side by side) -->
+                    <!-- Row 2: Monthly Budget and Spent This Month -->
                     <div class="card-row">
-                        <!-- Monthly Budget Card (Half size) -->
-                        <div class="card half-card">
+                        <!-- Monthly Budget Card -->
+                        <div class="card budget-primary">
                             <div class="card-header">
                                 <h2>Monthly Budget</h2>
-                                <i class="fa-solid fa-lock lock-icon locked" id="budgetLockIcon" data-locked="true"></i>
+                                <div class="card-controls">
+                                    <i class="fa-solid fa-lock lock-icon locked" id="budgetLockIcon" data-locked="true"></i>
+                                </div>
                             </div>
-                            <div class="amount-display-large budget-display">
-                                <span class="budget-amount" id="budgetAmount">0.00</span>
+                            <div class="card-amount-display">
+                                <span class="card-amount" id="budgetRemaining">0</span>
+                                <span class="card-separator">/</span>
+                                <span class="card-total" id="budgetTotal">0</span>
                             </div>
-                            <div class="progress-container">
-                                <div class="progress-bar budget-bar" id="budgetBar" style="width: 60%"></div>
+                            <div class="card-progress">
+                                <div class="progress-container">
+                                    <div class="progress-bar budget-bar" id="budgetBar" style="width: 60%"></div>
+                                </div>
                             </div>
-                            <div class="stats-row">
-                                <span id="budgetLeft">0 left</span>
+                            <div class="card-stats">
                                 <span id="budgetPercentage">40% remaining</span>
                             </div>
                         </div>
 
-                        <!-- Spent This Month Card (Half size) -->
-                        <div class="card half-card">
+                        <!-- Spent This Month Card -->
+                        <div class="card spent-primary">
                             <div class="card-header">
                                 <h2>Spent This Month</h2>
                                 <i class="fa-solid fa-credit-card" style="color: #f56565;"></i>
                             </div>
-                            <div class="amount-display-large spent-display">
-                                <span class="spent-amount" id="spentAmount">0.00</span>
+                            <div class="card-amount-display">
+                                <span class="card-amount" id="spentAmount">0.00</span>
                             </div>
-                            <div class="progress-container">
-                                <div class="progress-bar spent-bar" id="spentBar" style="width: 60%"></div>
+                            <div class="card-progress">
+                                <div class="progress-container">
+                                    <div class="progress-bar spent-bar" id="spentBar" style="width: 60%"></div>
+                                </div>
                             </div>
-                            <div class="stats-row">
-                                <span id="spentPercentage">60% of budget used</span>
+                            <div class="card-stats">
+                                <span id="spentPercentage">100% of budget used</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column - Placeholder Cards (UNCHANGED) -->
+                <!-- Right Column - Placeholder Cards -->
                 <div class="home-right">
-                    <!-- Placeholder Tile 1 -->
                     <div class="card placeholder-card">
                         <div class="placeholder-content">
                             <i class="fa-solid fa-chart-line placeholder-icon"></i>
@@ -135,7 +143,6 @@
                         </div>
                     </div>
 
-                    <!-- Placeholder Tile 2 -->
                     <div class="card placeholder-card">
                         <div class="placeholder-content">
                             <i class="fa-solid fa-clock placeholder-icon"></i>
@@ -152,17 +159,17 @@
             <!-- Top Row: Remaining and Savings Cards -->
             <div class="budgets-top-row">
                 <!-- Remaining Card -->
-                <div class="budget-card remaining-card">
-                    <div class="budget-card-header">
-                        <div class="category-info">
+                <div class="card remaining-primary">
+                    <div class="card-header">
+                        <div class="card-info">
                             <h3>Remaining Budget</h3>
                         </div>
-                        <span class="budget-percentage" id="remainingPercentage">0%</span>
+                        <span class="card-percentage" id="remainingPercentage">0%</span>
                     </div>
-                    <div class="budget-amount-display">
-                        <span class="budget-allocated" id="remainingAmount">₱0</span>
+                    <div class="card-amount-display">
+                        <span class="card-amount" id="remainingAmount">₱0</span>
                     </div>
-                    <div class="budget-progress">
+                    <div class="card-progress">
                         <div class="progress-container">
                             <div class="progress-bar remaining-bar" id="remainingProgress" style="width: 0%"></div>
                         </div>
@@ -170,17 +177,17 @@
                 </div>
 
                 <!-- Savings Card -->
-                <div class="budget-card savings-card">
-                    <div class="budget-card-header">
-                        <div class="category-info">
+                <div class="card savings-primary">
+                    <div class="card-header">
+                        <div class="card-info">
                             <h3>Savings</h3>
                         </div>
-                        <span class="budget-percentage" id="savingsAllocationPercentage">0%</span>
+                        <span class="card-percentage" id="savingsAllocationPercentage">0%</span>
                     </div>
-                    <div class="budget-amount-display">
-                        <span class="budget-allocated" id="savingsAllocationAmount">₱0</span>
+                    <div class="card-amount-display">
+                        <span class="card-amount" id="savingsAllocationAmount">₱0</span>
                     </div>
-                    <div class="budget-progress">
+                    <div class="card-progress">
                         <div class="progress-container">
                             <div class="progress-bar savings-bar" id="savingsAllocationProgress" style="width: 0%"></div>
                         </div>
@@ -188,24 +195,24 @@
                 </div>
             </div>
 
-            <!-- Bottom Grid: Category Cards (2x3) -->
+            <!-- Bottom Grid: Category Cards -->
             <div class="categories-grid">
                 <!-- Food Category Card -->
-                <div class="budget-card category-card" data-category="Food">
-                    <div class="budget-card-header">
-                        <div class="category-info">
-                            <span class="category-icon">🍔</span>
+                <div class="card category-primary" data-category="Food">
+                    <div class="card-header">
+                        <div class="card-info">
+                            <span class="card-icon">🍔</span>
                             <h3>Food</h3>
                         </div>
-                        <div class="budget-card-controls">
-                            <span class="budget-percentage" id="foodPercentage">Default set to 35%</span>
-                            <i class="fa-solid fa-lock budget-lock-icon locked" data-category="Food" data-locked="true"></i>
+                        <div class="card-controls">
+                            <span class="card-percentage" id="foodPercentage">35%</span>
+                            <i class="fa-solid fa-lock lock-icon locked" data-category="Food" data-locked="true"></i>
                         </div>
                     </div>
-                    <div class="budget-amount-display">
-                        <span class="budget-allocated" id="foodAmount">₱0</span>
+                    <div class="card-amount-display">
+                        <span class="card-amount" id="foodAmount">₱0</span>
                     </div>
-                    <div class="budget-progress">
+                    <div class="card-progress">
                         <div class="progress-container">
                             <div class="progress-bar category-bar" id="foodProgress" style="width: 0%"></div>
                         </div>
@@ -213,21 +220,21 @@
                 </div>
 
                 <!-- Transport Category Card -->
-                <div class="budget-card category-card" data-category="Transport">
-                    <div class="budget-card-header">
-                        <div class="category-info">
-                            <span class="category-icon">🚗</span>
+                <div class="card category-primary" data-category="Transport">
+                    <div class="card-header">
+                        <div class="card-info">
+                            <span class="card-icon">🚗</span>
                             <h3>Transport</h3>
                         </div>
-                        <div class="budget-card-controls">
-                            <span class="budget-percentage" id="transportPercentage">Default set to 20%</span>
-                            <i class="fa-solid fa-lock budget-lock-icon locked" data-category="Transport" data-locked="true"></i>
+                        <div class="card-controls">
+                            <span class="card-percentage" id="transportPercentage">20%</span>
+                            <i class="fa-solid fa-lock lock-icon locked" data-category="Transport" data-locked="true"></i>
                         </div>
                     </div>
-                    <div class="budget-amount-display">
-                        <span class="budget-allocated" id="transportAmount">₱0</span>
+                    <div class="card-amount-display">
+                        <span class="card-amount" id="transportAmount">₱0</span>
                     </div>
-                    <div class="budget-progress">
+                    <div class="card-progress">
                         <div class="progress-container">
                             <div class="progress-bar category-bar" id="transportProgress" style="width: 0%"></div>
                         </div>
@@ -235,21 +242,21 @@
                 </div>
 
                 <!-- Shopping Category Card -->
-                <div class="budget-card category-card" data-category="Shopping">
-                    <div class="budget-card-header">
-                        <div class="category-info">
-                            <span class="category-icon">🛒</span>
+                <div class="card category-primary" data-category="Shopping">
+                    <div class="card-header">
+                        <div class="card-info">
+                            <span class="card-icon">🛒</span>
                             <h3>Shopping</h3>
                         </div>
-                        <div class="budget-card-controls">
-                            <span class="budget-percentage" id="shoppingPercentage">Default set to 20%</span>
-                            <i class="fa-solid fa-lock budget-lock-icon locked" data-category="Shopping" data-locked="true"></i>
+                        <div class="card-controls">
+                            <span class="card-percentage" id="shoppingPercentage">20%</span>
+                            <i class="fa-solid fa-lock lock-icon locked" data-category="Shopping" data-locked="true"></i>
                         </div>
                     </div>
-                    <div class="budget-amount-display">
-                        <span class="budget-allocated" id="shoppingAmount">₱0</span>
+                    <div class="card-amount-display">
+                        <span class="card-amount" id="shoppingAmount">₱0</span>
                     </div>
-                    <div class="budget-progress">
+                    <div class="card-progress">
                         <div class="progress-container">
                             <div class="progress-bar category-bar" id="shoppingProgress" style="width: 0%"></div>
                         </div>
@@ -257,21 +264,21 @@
                 </div>
 
                 <!-- Entertainment Category Card -->
-                <div class="budget-card category-card" data-category="Entertainment">
-                    <div class="budget-card-header">
-                        <div class="category-info">
-                            <span class="category-icon">🎬</span>
+                <div class="card category-primary" data-category="Entertainment">
+                    <div class="card-header">
+                        <div class="card-info">
+                            <span class="card-icon">🎬</span>
                             <h3>Entertainment</h3>
                         </div>
-                        <div class="budget-card-controls">
-                            <span class="budget-percentage" id="entertainmentPercentage">Default set to 15%</span>
-                            <i class="fa-solid fa-lock budget-lock-icon locked" data-category="Entertainment" data-locked="true"></i>
+                        <div class="card-controls">
+                            <span class="card-percentage" id="entertainmentPercentage">15%</span>
+                            <i class="fa-solid fa-lock lock-icon locked" data-category="Entertainment" data-locked="true"></i>
                         </div>
                     </div>
-                    <div class="budget-amount-display">
-                        <span class="budget-allocated" id="entertainmentAmount">₱0</span>
+                    <div class="card-amount-display">
+                        <span class="card-amount" id="entertainmentAmount">₱0</span>
                     </div>
-                    <div class="budget-progress">
+                    <div class="card-progress">
                         <div class="progress-container">
                             <div class="progress-bar category-bar" id="entertainmentProgress" style="width: 0%"></div>
                         </div>
@@ -279,21 +286,21 @@
                 </div>
 
                 <!-- Bills Category Card -->
-                <div class="budget-card category-card" data-category="Bills">
-                    <div class="budget-card-header">
-                        <div class="category-info">
-                            <span class="category-icon">💡</span>
+                <div class="card category-primary" data-category="Bills">
+                    <div class="card-header">
+                        <div class="card-info">
+                            <span class="card-icon">💡</span>
                             <h3>Bills</h3>
                         </div>
-                        <div class="budget-card-controls">
-                            <span class="budget-percentage" id="billsPercentage">25%</span>
-                            <i class="fa-solid fa-lock budget-lock-icon locked" data-category="Bills" data-locked="true"></i>
+                        <div class="card-controls">
+                            <span class="card-percentage" id="billsPercentage">25%</span>
+                            <i class="fa-solid fa-lock lock-icon locked" data-category="Bills" data-locked="true"></i>
                         </div>
                     </div>
-                    <div class="budget-amount-display">
-                        <span class="budget-allocated" id="billsAmount">₱0</span>
+                    <div class="card-amount-display">
+                        <span class="card-amount" id="billsAmount">₱0</span>
                     </div>
-                    <div class="budget-progress">
+                    <div class="card-progress">
                         <div class="progress-container">
                             <div class="progress-bar category-bar" id="billsProgress" style="width: 0%"></div>
                         </div>
@@ -301,21 +308,21 @@
                 </div>
 
                 <!-- Other Category Card -->
-                <div class="budget-card category-card" data-category="Other">
-                    <div class="budget-card-header">
-                        <div class="category-info">
-                            <span class="category-icon">📦</span>
+                <div class="card category-primary" data-category="Other">
+                    <div class="card-header">
+                        <div class="card-info">
+                            <span class="card-icon">📦</span>
                             <h3>Other</h3>
                         </div>
-                        <div class="budget-card-controls">
-                            <span class="budget-percentage" id="otherPercentage">Default set to 10%</span>
-                            <i class="fa-solid fa-lock budget-lock-icon locked" data-category="Other" data-locked="true"></i>
+                        <div class="card-controls">
+                            <span class="card-percentage" id="otherPercentage">10%</span>
+                            <i class="fa-solid fa-lock lock-icon locked" data-category="Other" data-locked="true"></i>
                         </div>
                     </div>
-                    <div class="budget-amount-display">
-                        <span class="budget-allocated" id="otherAmount">₱0</span>
+                    <div class="card-amount-display">
+                        <span class="card-amount" id="otherAmount">₱0</span>
                     </div>
-                    <div class="budget-progress">
+                    <div class="card-progress">
                         <div class="progress-container">
                             <div class="progress-bar category-bar" id="otherProgress" style="width: 0%"></div>
                         </div>
@@ -326,63 +333,10 @@
 
         <!-- SAVINGS TAB -->
         <div id="savingsTab" class="tab-content">
-            <!-- Savings Targets Card -->
-            <div class="card saving-goals-card">
-                <div class="card-header">
-                    <h2>Savings Targets</h2>
-                    <i class="fa-solid fa-bullseye" style="color: #edb458;"></i>
-                </div>
-                
-                <div class="goals-list" id="goalsList">
-                    <div class="empty-state">
-                        <p>No savings targets yet.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Add Goal Card -->
-            <div class="card add-goal-card">
-                <div class="card-header">
-                    <h2>Create New Target</h2>
-                    <i class="fa-solid fa-plus-circle" style="color: #9d4edd;"></i>
-                </div>
-                
-                <div class="goal-form-compact" id="goalFormCompact">
-                    <div class="form-group">
-                        <label for="goalToCompact">What are you saving for?</label>
-                        <select id="goalToCompact" class="goal-select" required>
-                            <option value="" disabled selected>Select goal type</option>
-                            <option value="Emergency Fund">🚨 Emergency Fund</option>
-                            <option value="Vacation">✈️ Vacation</option>
-                            <option value="New Gadget">📱 New Gadget</option>
-                            <option value="Car">🚗 Car</option>
-                            <option value="House">🏠 House</option>
-                            <option value="Education">📚 Education</option>
-                            <option value="Other">📦 Other</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="goalFromCompact">Category to save from</label>
-                        <select id="goalFromCompact" class="goal-select" required>
-                            <option value="" disabled selected>Select category</option>
-                            <option value="Food">🍔 Food</option>
-                            <option value="Transport">🚗 Transport</option>
-                            <option value="Shopping">🛒 Shopping</option>
-                            <option value="Entertainment">🎬 Entertainment</option>
-                            <option value="Bills">💡 Bills</option>
-                            <option value="All Categories">📊 All Categories</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="goalAmountCompact">Target amount</label>
-                        <input type="number" id="goalAmountCompact" class="goal-input" step="any" min="0" placeholder="Enter amount">
-                    </div>
-
-                    <button type="button" class="btn-create" id="createGoalCompactBtn">
-                        <i class="fa-solid fa-check"></i> Create Goal
-                    </button>
+            <!-- Savings Targets Grid -->
+            <div class="savings-grid" id="savingsGrid">
+                <div class="empty-state" id="emptySavingsState">
+                    <p>No savings targets yet. Click the + button and select Savings to create one!</p>
                 </div>
             </div>
         </div>
@@ -448,61 +402,65 @@
                     <button class="toggle-option" id="incomeToggleBtn">
                         <span class="toggle-text">Income</span>
                     </button>
+                    <button class="toggle-option" id="savingsToggleBtn">
+                        <span class="toggle-text">Savings</span>
+                    </button>
                 </div>
                 
                 <!-- Expense Form -->
-                <form id="expenseForm" class="transaction-form active-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="expenseAmount">Amount</label>
-                            <input type="number" id="expenseAmount" step="any" min="0" placeholder="0.00" required>
+                <form id="expenseForm" class="transaction-form">
+                    <div class="form-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expenseAmount">Amount</label>
+                                <input type="number" id="expenseAmount" step="any" min="0" placeholder="0.00" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="expenseDate">Date</label>
+                                <input type="date" id="expenseDate" required>
+                            </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="expenseDate">Date</label>
-                            <input type="date" id="expenseDate" required>
-                        </div>
-                    </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="expenseCategory">Category</label>
-                            <select id="expenseCategory" required>
-                                <option value="" disabled selected>Select category</option>
-                                <option value="Food">🍔 Food</option>
-                                <option value="Transport">🚗 Transport</option>
-                                <option value="Shopping">🛒 Shopping</option>
-                                <option value="Entertainment">🎬 Entertainment</option>
-                                <option value="Bills">💡 Bills</option>
-                                <option value="Other">📦 Other</option>
-                            </select>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expenseCategory">Category</label>
+                                <select id="expenseCategory" required>
+                                    <option value="" disabled selected>Select category</option>
+                                    <option value="Food">🍔 Food</option>
+                                    <option value="Transport">🚗 Transport</option>
+                                    <option value="Shopping">🛒 Shopping</option>
+                                    <option value="Entertainment">🎬 Entertainment</option>
+                                    <option value="Bills">💡 Bills</option>
+                                    <option value="Other">📦 Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="expenseSubcategory">Subcategory</label>
+                                <select id="expenseSubcategory" disabled>
+                                    <option value="" disabled selected>Select category first</option>
+                                </select>
+                            </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="expenseSubcategory">Subcategory</label>
-                            <select id="expenseSubcategory" disabled>
-                                <option value="" disabled selected>Select category first</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="expensePaymentMethod">Payment Method</label>
-                            <select id="expensePaymentMethod" required>
-                                <option value="" disabled selected>Select payment method</option>
-                                <option value="Cash">💵 Cash</option>
-                                <option value="Credit Card">💳 Credit Card</option>
-                                <option value="Debit Card">💳 Debit Card</option>
-                                <option value="Bank Transfer">🏦 Bank Transfer</option>
-                                <option value="E-Wallet">📱 E-Wallet</option>
-                                <option value="Other">📦 Other</option>
-                            </select>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expensePaymentMethod">Payment Method</label>
+                                <select id="expensePaymentMethod" required>
+                                    <option value="" disabled selected>Select payment method</option>
+                                    <option value="Cash">💵 Cash</option>
+                                    <option value="Credit Card">💳 Credit Card</option>
+                                    <option value="Debit Card">💳 Debit Card</option>
+                                    <option value="Bank Transfer">🏦 Bank Transfer</option>
+                                    <option value="E-Wallet">📱 E-Wallet</option>
+                                    <option value="Other">📦 Other</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
                     <div class="modal-actions">
-                        <button type="button" class="btn-cancel" id="cancelAddTransaction">Cancel</button>
                         <button type="submit" class="btn-add" id="addExpenseBtn">
                             <i class="fa-solid fa-plus"></i> Add Expense
                         </button>
@@ -511,59 +469,105 @@
 
                 <!-- Income Form -->
                 <form id="incomeForm" class="transaction-form" style="display: none;">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="incomeAmount">Amount</label>
-                            <input type="number" id="incomeAmount" step="any" min="0" placeholder="0.00" required>
+                    <div class="form-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="incomeAmount">Amount</label>
+                                <input type="number" id="incomeAmount" step="any" min="0" placeholder="0.00" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="incomeDate">Date</label>
+                                <input type="date" id="incomeDate" required>
+                            </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="incomeDate">Date</label>
-                            <input type="date" id="incomeDate" required>
-                        </div>
-                    </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="incomeCategory">Category</label>
-                            <select id="incomeCategory" required>
-                                <option value="" disabled selected>Select category</option>
-                                <option value="Salary">💰 Salary</option>
-                                <option value="Freelance">💻 Freelance</option>
-                                <option value="Investment">📈 Investment</option>
-                                <option value="Gift">🎁 Gift</option>
-                                <option value="Refund">↩️ Refund</option>
-                                <option value="Other">📦 Other</option>
-                            </select>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="incomeCategory">Category</label>
+                                <select id="incomeCategory" required>
+                                    <option value="" disabled selected>Select category</option>
+                                    <option value="Salary">💰 Salary</option>
+                                    <option value="Freelance">💻 Freelance</option>
+                                    <option value="Investment">📈 Investment</option>
+                                    <option value="Gift">🎁 Gift</option>
+                                    <option value="Refund">↩️ Refund</option>
+                                    <option value="Other">📦 Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="incomeSource">Source</label>
+                                <input type="text" id="incomeSource" placeholder="e.g., Company, Client, etc.">
+                            </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="incomeSource">Source</label>
-                            <input type="text" id="incomeSource" placeholder="e.g., Company, Client, etc.">
-                        </div>
-                    </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="incomePaymentMethod">Payment Method</label>
-                            <select id="incomePaymentMethod" required>
-                                <option value="" disabled selected>Select payment method</option>
-                                <option value="Cash">💵 Cash</option>
-                                <option value="Bank Transfer">🏦 Bank Transfer</option>
-                                <option value="E-Wallet">📱 E-Wallet</option>
-                                <option value="Check">📝 Check</option>
-                                <option value="Other">📦 Other</option>
-                            </select>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="incomePaymentMethod">Payment Method</label>
+                                <select id="incomePaymentMethod" required>
+                                    <option value="" disabled selected>Select payment method</option>
+                                    <option value="Cash">💵 Cash</option>
+                                    <option value="Bank Transfer">🏦 Bank Transfer</option>
+                                    <option value="E-Wallet">📱 E-Wallet</option>
+                                    <option value="Check">📝 Check</option>
+                                    <option value="Other">📦 Other</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
                     <div class="modal-actions">
-                        <button type="button" class="btn-cancel" id="cancelAddTransaction">Cancel</button>
                         <button type="submit" class="btn-add" id="addIncomeBtn">
                             <i class="fa-solid fa-plus"></i> Add Income
                         </button>
                     </div>
                 </form>
+
+                <!-- Savings Form -->
+                <form id="savingsForm" class="transaction-form" style="display: none;">
+                    <div class="form-content">
+                        <!-- Goal Name - Full Width -->
+                        <div class="form-row full-width">
+                            <div class="form-group">
+                                <label for="savingsName">Goal</label>
+                                <input type="text" id="savingsName" placeholder="e.g., Emergency Fund, Vacation" required>
+                            </div>
+                        </div>
+
+                        <!-- Category and Target Amount - Side by Side -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="savingsCategory">Category to save from</label>
+                                <select id="savingsCategory" required>
+                                    <option value="" disabled selected>Select category</option>
+                                    <option value="Food">🍔 Food</option>
+                                    <option value="Transport">🚗 Transport</option>
+                                    <option value="Shopping">🛒 Shopping</option>
+                                    <option value="Entertainment">🎬 Entertainment</option>
+                                    <option value="Bills">💡 Bills</option>
+                                    <option value="All Categories">📊 All Categories</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="savingsTargetAmount">Target Amount</label>
+                                <input type="number" id="savingsTargetAmount" step="any" min="0" placeholder="0.00" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-add" id="addSavingsBtn">
+                            <i class="fa-solid fa-piggy-bank"></i> Create Savings Goal
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Single Cancel Button for all forms -->
+                <div class="modal-actions" style="margin-top: 10px;">
+                    <button type="button" class="btn-cancel" id="cancelAddTransaction">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
