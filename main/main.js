@@ -18,7 +18,7 @@ if (!session) {
 let expenses = [];
 let incomes = [];
 let savingsTargets = [];
-let MONTHLY_BUDGET = 2500;
+let MONTHLY_BUDGET = 5000;
 
 // ===== CATEGORY PERCENTAGES =====
 const categoryPercentages = {
@@ -100,12 +100,10 @@ function setMonthFromLatestExpense() {
         
         currentMonth = latestDate.getMonth();
         currentYear = latestDate.getFullYear();
-        console.log('Month set from latest expense:', monthNames[currentMonth], currentYear);
     } else {
         const today = new Date();
         currentMonth = today.getMonth();
         currentYear = today.getFullYear();
-        console.log('Using current month:', monthNames[currentMonth], currentYear);
     }
 }
 
@@ -151,18 +149,18 @@ function calculateCategorySpending() {
 function updateCategoryCard(category, budget, spent) {
     const amountEl = document.getElementById(`${category.toLowerCase()}Amount`);
     const progressEl = document.getElementById(`${category.toLowerCase()}Progress`);
-    const lockIcon = document.querySelector(`.lock-icon[data-category="${category}"]`);
-    
+    const editIcon = document.querySelector(`.edit-icon[data-category="${category}"]`);
+
     const remaining = budget - spent;
     const progressPercent = budget > 0 ? (spent / budget) * 100 : 0;
     
-    const fullHtml = `<span class="card-amount">${Math.max(remaining, 0).toFixed(0)}</span><span class="card-separator">/</span><span class="card-total">${budget.toFixed(0)}</span>`;
+    const fullHtml = `<span class="card-amount">${Math.max(remaining, 0).toFixed(2)}</span><span class="card-separator">/</span><span class="card-total">${budget.toFixed(2)}</span>`;
     
     if (amountEl) {
         amountEl.setAttribute('data-original-html', fullHtml);
         
-        if (lockIcon && lockIcon.getAttribute('data-locked') === 'false') {
-            amountEl.innerHTML = `<span class="card-total">${budget.toFixed(0)}</span>`;
+        if (editIcon && editIcon.getAttribute('data-editing') === 'true') {
+            amountEl.innerHTML = `<span class="card-total">${budget.toFixed(2)}</span>`;
         } else {
             amountEl.innerHTML = fullHtml;
         }
@@ -179,7 +177,6 @@ function updateCategoryCard(category, budget, spent) {
 // ===== BUDGET ALLOCATIONS DATABASE FUNCTIONS =====
 async function loadBudgetAllocations(userId) {
     try {
-        console.log('Loading budget allocations for user:', userId);
         const { data, error } = await supabase
             .from('budget_allocations')
             .select('*')
@@ -194,9 +191,6 @@ async function loadBudgetAllocations(userId) {
             data.forEach(allocation => {
                 window.customBudgetAmounts[allocation.category] = allocation.amount;
             });
-            console.log('Budget allocations loaded:', window.customBudgetAmounts);
-        } else {
-            console.log('No custom budget allocations found');
         }
     } catch (error) {
         console.error('Error loading budget allocations:', error);
@@ -254,32 +248,45 @@ function updateCategoryBudgets() {
     
     const categorySpending = calculateCategorySpending();
     
-    let foodBudget, transportBudget, shoppingBudget, entertainmentBudget, billsBudget, otherBudget;
+    const billsBudget = (categoryPercentages.Bills / 100) * monthlyBudget;
+    const remainingBudget = monthlyBudget - billsBudget;
+    
+    const foodPercentage = 35;
+    const transportPercentage = 20;
+    const shoppingPercentage = 20;
+    const entertainmentPercentage = 15;
+    const otherPercentage = 10;
+    
+    const otherCategoriesTotal = foodPercentage + transportPercentage + 
+                                 shoppingPercentage + entertainmentPercentage + 
+                                 otherPercentage;
+    
+    let foodBudget, transportBudget, shoppingBudget, entertainmentBudget, otherBudget;
     
     const hasCustomAmounts = window.customBudgetAmounts && Object.keys(window.customBudgetAmounts).length > 0;
     
     if (hasCustomAmounts) {
-        const defaultBillsBudget = (categoryPercentages.Bills / 100) * monthlyBudget;
-        const defaultFoodBudget = (categoryPercentages.Food / 100) * monthlyBudget;
-        const defaultTransportBudget = (categoryPercentages.Transport / 100) * monthlyBudget;
-        const defaultShoppingBudget = (categoryPercentages.Shopping / 100) * monthlyBudget;
-        const defaultEntertainmentBudget = (categoryPercentages.Entertainment / 100) * monthlyBudget;
-        const defaultOtherBudget = (categoryPercentages.Other / 100) * monthlyBudget;
+        foodBudget = window.customBudgetAmounts['Food'] !== undefined ? 
+            window.customBudgetAmounts['Food'] : (foodPercentage / otherCategoriesTotal) * remainingBudget;
         
-        foodBudget = window.customBudgetAmounts['Food'] !== undefined ? window.customBudgetAmounts['Food'] : defaultFoodBudget;
-        transportBudget = window.customBudgetAmounts['Transport'] !== undefined ? window.customBudgetAmounts['Transport'] : defaultTransportBudget;
-        shoppingBudget = window.customBudgetAmounts['Shopping'] !== undefined ? window.customBudgetAmounts['Shopping'] : defaultShoppingBudget;
-        entertainmentBudget = window.customBudgetAmounts['Entertainment'] !== undefined ? window.customBudgetAmounts['Entertainment'] : defaultEntertainmentBudget;
-        billsBudget = window.customBudgetAmounts['Bills'] !== undefined ? window.customBudgetAmounts['Bills'] : defaultBillsBudget;
-        otherBudget = window.customBudgetAmounts['Other'] !== undefined ? window.customBudgetAmounts['Other'] : defaultOtherBudget;
+        transportBudget = window.customBudgetAmounts['Transport'] !== undefined ? 
+            window.customBudgetAmounts['Transport'] : (transportPercentage / otherCategoriesTotal) * remainingBudget;
+        
+        shoppingBudget = window.customBudgetAmounts['Shopping'] !== undefined ? 
+            window.customBudgetAmounts['Shopping'] : (shoppingPercentage / otherCategoriesTotal) * remainingBudget;
+        
+        entertainmentBudget = window.customBudgetAmounts['Entertainment'] !== undefined ? 
+            window.customBudgetAmounts['Entertainment'] : (entertainmentPercentage / otherCategoriesTotal) * remainingBudget;
+        
+        otherBudget = window.customBudgetAmounts['Other'] !== undefined ? 
+            window.customBudgetAmounts['Other'] : (otherPercentage / otherCategoriesTotal) * remainingBudget;
         
     } else {
-        foodBudget = (categoryPercentages.Food / 100) * monthlyBudget;
-        transportBudget = (categoryPercentages.Transport / 100) * monthlyBudget;
-        shoppingBudget = (categoryPercentages.Shopping / 100) * monthlyBudget;
-        entertainmentBudget = (categoryPercentages.Entertainment / 100) * monthlyBudget;
-        billsBudget = (categoryPercentages.Bills / 100) * monthlyBudget;
-        otherBudget = (categoryPercentages.Other / 100) * monthlyBudget;
+        foodBudget = (foodPercentage / otherCategoriesTotal) * remainingBudget;
+        transportBudget = (transportPercentage / otherCategoriesTotal) * remainingBudget;
+        shoppingBudget = (shoppingPercentage / otherCategoriesTotal) * remainingBudget;
+        entertainmentBudget = (entertainmentPercentage / otherCategoriesTotal) * remainingBudget;
+        otherBudget = (otherPercentage / otherCategoriesTotal) * remainingBudget;
     }
     
     updateCategoryCard('Food', foodBudget, categorySpending.Food || 0);
@@ -289,30 +296,24 @@ function updateCategoryBudgets() {
     updateCategoryCard('Bills', billsBudget, categorySpending.Bills || 0);
     updateCategoryCard('Other', otherBudget, categorySpending.Other || 0);
     
-    const savingsAmountEl = document.getElementById('savingsAllocationAmount');
-    const savingsPercentageEl = document.getElementById('savingsAllocationPercentage');
-    const savingsProgressEl = document.getElementById('savingsAllocationProgress');
-    
-    if (savingsAmountEl) {
-        savingsAmountEl.innerHTML = `<span class="card-amount">0</span><span class="card-separator">/</span><span class="card-total">0</span>`;
-    }
-    if (savingsPercentageEl) {
-        savingsPercentageEl.textContent = `0%`;
-    }
-    if (savingsProgressEl) {
-        savingsProgressEl.style.width = `0%`;
+    // Update savings allocation amount from global savings
+    const savingsAllocationEl = document.getElementById('savingsAllocationAmount');
+    if (savingsAllocationEl) {
+        // Get the current savings amount from the home tab or calculate
+        const totalSavings = calculateSavingsFromGoals();
+        savingsAllocationEl.innerHTML = `<span class="card-amount">${totalSavings.toFixed(2)}</span>`;
     }
     
     const remainingAmountEl = document.getElementById('remainingAmount');
     const remainingPercentageEl = document.getElementById('remainingPercentage');
     const remainingProgressEl = document.getElementById('remainingProgress');
-    
+
     const totalAllocated = foodBudget + transportBudget + shoppingBudget + 
-                          entertainmentBudget + billsBudget + otherBudget;
+                        entertainmentBudget + billsBudget + otherBudget;
     const unallocated = monthlyBudget - totalAllocated;
-    
+
     if (remainingAmountEl) {
-        remainingAmountEl.innerHTML = `<span class="card-amount">${unallocated.toFixed(0)}</span><span class="card-separator">/</span><span class="card-total">${monthlyBudget.toFixed(0)}</span>`;
+        remainingAmountEl.innerHTML = `<span class="card-amount">${unallocated.toFixed(2)}</span><span class="card-separator">/</span><span class="card-total">${monthlyBudget.toFixed(2)}</span>`;
     }
     if (remainingPercentageEl) {
         const remainingPercent = (unallocated / monthlyBudget) * 100;
@@ -326,6 +327,8 @@ function updateCategoryBudgets() {
 
 // ===== UPDATE SAVINGS TARGETS LIST =====
 function updateSavingsTargetsList() {
+    calculateSpendNoMoreThanProgress();
+    
     const savingsGrid = document.getElementById('savingsGrid');
     if (!savingsGrid) return;
     
@@ -340,49 +343,54 @@ function updateSavingsTargetsList() {
     
     savingsGrid.innerHTML = savingsTargets.map(target => {
         const progress = (target.saved / target.target) * 100;
+        const isOverBudget = target.saved > target.target;
+        const borderClass = target.name.startsWith('Spend no more than') 
+            ? (isOverBudget ? 'over-budget' : 'within-budget')
+            : '';
+            
         return `
-        <div class="card savings-primary" data-id="${target.id}">
+        <div class="card savings-primary ${borderClass}" data-id="${target.id}">
             <div class="card-header">
                 <div class="card-info">
                     <span class="card-icon">🎯</span>
                     <h3 class="savings-goal-name">${target.name}</h3>
                 </div>
                 <div class="card-controls">
-                    <i class="fa-solid fa-lock lock-icon locked" data-goal-id="${target.id}" data-locked="true"></i>
+                    <i class="fa-solid fa-pen-to-square edit-icon" data-goal-id="${target.id}" data-editing="false"></i>
                     <i class="fa-solid fa-trash-can delete-icon" data-goal-id="${target.id}" style="opacity: 0.3; pointer-events: none;"></i>
                 </div>
             </div>
             <div class="card-amount-display">
-                <span class="card-amount" id="savings-amount-${target.id}">${target.saved.toFixed(0)}</span>
+                <span class="card-amount" id="savings-amount-${target.id}">${target.saved.toFixed(2)}</span>
                 <span class="card-separator">/</span>
-                <span class="card-total">${target.target.toFixed(0)}</span>
+                <span class="card-total">${target.target.toFixed(2)}</span>
             </div>
             <div class="card-progress">
                 <div class="progress-container">
-                    <div class="progress-bar savings-bar" style="width: ${progress}%"></div>
+                    <div class="progress-bar ${isOverBudget ? 'spent-bar' : 'savings-bar'}" style="width: ${Math.min(progress, 100)}%"></div>
                 </div>
             </div>
             <div class="card-stats">
-                <span class="savings-goal-current">${target.saved.toFixed(0)} saved</span>
-                <span class="savings-goal-target-stat">${target.target.toFixed(0)} target</span>
+                <span class="savings-goal-current">${target.saved.toFixed(2)} saved</span>
+                <span class="savings-goal-target-stat">${target.target.toFixed(2)} target</span>
             </div>
             <div class="savings-goal-source">
-                <i class="fa-solid fa-filter"></i> Saving from: ${target.source || 'All categories'}
+                <i class="fa-solid fa-filter"></i> Category: ${target.source || 'All categories'}
             </div>
         </div>
     `}).join('');
     
-    setupSavingsGoalLocks();
+    setupSavingsGoalEdits();
     setupSavingsGoalDeletes();
 }
 
-function setupSavingsGoalLocks() {
-    document.querySelectorAll('.lock-icon[data-goal-id]').forEach(lock => {
-        const newLock = lock.cloneNode(true);
-        lock.parentNode.replaceChild(newLock, lock);
-        newLock.addEventListener('click', (e) => {
+function setupSavingsGoalEdits() {
+    document.querySelectorAll('.edit-icon[data-goal-id]').forEach(edit => {
+        const newEdit = edit.cloneNode(true);
+        edit.parentNode.replaceChild(newEdit, edit);
+        newEdit.addEventListener('click', (e) => {
             e.stopPropagation();
-            toggleSavingsGoalLock(newLock);
+            toggleSavingsGoalEdit(newEdit);
         });
     });
 }
@@ -394,28 +402,28 @@ function setupSavingsGoalDeletes() {
         newDelete.addEventListener('click', (e) => {
             e.stopPropagation();
             const goalId = newDelete.dataset.goalId;
-            const lockIcon = document.querySelector(`.lock-icon[data-goal-id="${goalId}"]`);
-            if (lockIcon?.getAttribute('data-locked') === 'false') {
+            const editIcon = document.querySelector(`.edit-icon[data-goal-id="${goalId}"]`);
+            if (editIcon?.getAttribute('data-editing') === 'true') {
                 deleteSavingsGoal(goalId);
             }
         });
     });
 }
 
-function toggleSavingsGoalLock(lockIcon) {
-    const goalId = lockIcon.dataset.goalId;
+function toggleSavingsGoalEdit(editIcon) {
+    const goalId = editIcon.dataset.goalId;
     const deleteIcon = document.querySelector(`.delete-icon[data-goal-id="${goalId}"]`);
     
-    if (lockIcon.classList.contains('locked')) {
-        lockIcon.className = 'fa-solid fa-unlock lock-icon unlocked';
-        lockIcon.setAttribute('data-locked', 'false');
+    if (editIcon.getAttribute('data-editing') === 'false') {
+        editIcon.className = 'fa-solid fa-square-check edit-icon editing';
+        editIcon.setAttribute('data-editing', 'true');
         if (deleteIcon) {
             deleteIcon.style.opacity = '1';
             deleteIcon.style.pointerEvents = 'auto';
         }
     } else {
-        lockIcon.className = 'fa-solid fa-lock lock-icon locked';
-        lockIcon.setAttribute('data-locked', 'true');
+        editIcon.className = 'fa-solid fa-pen-to-square edit-icon';
+        editIcon.setAttribute('data-editing', 'false');
         if (deleteIcon) {
             deleteIcon.style.opacity = '0.3';
             deleteIcon.style.pointerEvents = 'none';
@@ -423,9 +431,8 @@ function toggleSavingsGoalLock(lockIcon) {
     }
 }
 
+// ===== DELETE SAVINGS GOAL =====
 async function deleteSavingsGoal(goalId) {
-    if (!confirm('Delete this savings goal?')) return;
-    
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
@@ -546,7 +553,7 @@ function updateIncomesList(monthIncomes) {
 }
 
 // ===== MAIN DASHBOARD UPDATE =====
-function updateDashboard() {
+async function updateDashboard() {
     const monthExpenses = expenses.filter(expense => {
         const expenseDate = new Date(expense.date);
         return expenseDate.getMonth() === currentMonth && 
@@ -561,19 +568,44 @@ function updateDashboard() {
     const spentPercentage = MONTHLY_BUDGET > 0 ? Math.min(100, (totalSpent / MONTHLY_BUDGET) * 100) : 0;
     const budgetPercentage = MONTHLY_BUDGET > 0 ? Math.min(100, Math.max(0, (budgetLeft / MONTHLY_BUDGET) * 100)) : 0;
 
+    // Calculate and save to database
+    const calculatedSavings = await calculateAndSaveSavings();
+    
+    // Read from database and display
+    const totalSavings = await getSavingsFromDatabase();
+
     const budgetRemainingEl = document.getElementById('budgetRemaining');
     const budgetTotalEl = document.getElementById('budgetTotal');
-    const lockIcon = document.getElementById('budgetLockIcon');
+    const editIcon = document.getElementById('budgetEditIcon');
     const budgetSeparator = document.getElementById('budgetSeparator');
     
     if (budgetRemainingEl) {
-        budgetRemainingEl.textContent = Math.max(budgetLeft, 0).toFixed(0);
+        budgetRemainingEl.textContent = Math.max(budgetLeft, 0).toFixed(2);
     }
     if (budgetTotalEl) {
-        budgetTotalEl.textContent = MONTHLY_BUDGET.toFixed(0);
+        // Check if we're in edit mode
+        if (editIcon && editIcon.getAttribute('data-editing') === 'true') {
+            // Keep the editable container with pen icon
+            const container = document.createElement('div');
+            container.className = 'editable-amount-container';
+            container.setAttribute('data-budget', 'true');
+            container.innerHTML = `
+                <span class="card-total">${MONTHLY_BUDGET.toFixed(2)}</span>
+                <i class="fa-solid fa-pen edit-amount-icon"></i>
+            `;
+            budgetTotalEl.innerHTML = '';
+            budgetTotalEl.appendChild(container);
+            
+            container.addEventListener('click', (e) => {
+                e.stopPropagation();
+                editBudget();
+            });
+        } else {
+            budgetTotalEl.textContent = MONTHLY_BUDGET.toFixed(2);
+        }
     }
     
-    if (lockIcon && lockIcon.getAttribute('data-locked') === 'false') {
+    if (editIcon && editIcon.getAttribute('data-editing') === 'true') {
         if (budgetRemainingEl) budgetRemainingEl.style.display = 'none';
         if (budgetSeparator) budgetSeparator.style.display = 'none';
     } else {
@@ -608,22 +640,7 @@ function updateDashboard() {
     
     const savingsAmountEl = document.getElementById('savingsAmount');
     if (savingsAmountEl) {
-        savingsAmountEl.textContent = '0.00';
-    }
-    
-    const savingsProgressBarEl = document.getElementById('savingsProgressBar');
-    if (savingsProgressBarEl) {
-        savingsProgressBarEl.style.width = '0%';
-    }
-    
-    const savingsProgressTextEl = document.getElementById('savingsProgressText');
-    if (savingsProgressTextEl) {
-        savingsProgressTextEl.textContent = '0% of goal';
-    }
-    
-    const savingsRemainingEl = document.getElementById('savingsRemaining');
-    if (savingsRemainingEl) {
-        savingsRemainingEl.textContent = '₱0 left';
+        savingsAmountEl.textContent = totalSavings.toFixed(2);
     }
 
     updateExpensesList(monthExpenses);
@@ -655,7 +672,6 @@ function updateDashboard() {
 // ===== LOAD DATA FROM SUPABASE =====
 async function loadBudget(userId) {
     try {
-        console.log('Loading budget for user:', userId);
         const { data, error } = await supabase
             .from('profiles')
             .select('monthly_budget')
@@ -664,26 +680,23 @@ async function loadBudget(userId) {
         
         if (error) {
             if (error.code === 'PGRST116') {
-                console.log('No profile found, creating default');
                 const { error: insertError } = await supabase
                     .from('profiles')
                     .insert([{ 
                         id: userId, 
-                        monthly_budget: 2500,
+                        monthly_budget: 5000,
                         first_name: 'User',
                         last_name: 'Name',
                         email: session?.user?.email || ''
                     }]);
                 
                 if (insertError) throw insertError;
-                MONTHLY_BUDGET = 2500;
-                console.log('Default budget set to 2500');
+                MONTHLY_BUDGET = 5000;
             } else {
                 throw error;
             }
         } else if (data) {
             MONTHLY_BUDGET = parseFloat(data.monthly_budget);
-            console.log('Budget loaded:', MONTHLY_BUDGET);
         }
     } catch (error) {
         console.error('Error loading budget:', error);
@@ -692,7 +705,6 @@ async function loadBudget(userId) {
 
 async function loadExpenses(userId) {
     try {
-        console.log('Loading expenses for user:', userId);
         const { data, error } = await supabase
             .from('expenses')
             .select('*')
@@ -710,7 +722,6 @@ async function loadExpenses(userId) {
             date: expense.date
         })) : [];
         
-        console.log('Expenses loaded:', expenses.length);
     } catch (error) {
         console.error('Error loading expenses:', error);
     }
@@ -718,7 +729,6 @@ async function loadExpenses(userId) {
 
 async function loadIncomes(userId) {
     try {
-        console.log('Loading incomes for user:', userId);
         const { data, error } = await supabase
             .from('incomes')
             .select('*')
@@ -736,7 +746,6 @@ async function loadIncomes(userId) {
             date: income.date
         })) : [];
         
-        console.log('Incomes loaded:', incomes.length);
     } catch (error) {
         console.error('Error loading incomes:', error);
     }
@@ -744,7 +753,6 @@ async function loadIncomes(userId) {
 
 async function loadSavingsTargets(userId) {
     try {
-        console.log('Loading savings targets for user:', userId);
         const { data, error } = await supabase
             .from('savings_targets')
             .select('*')
@@ -766,44 +774,76 @@ async function loadSavingsTargets(userId) {
             savingsTargets = [];
         }
         
-        console.log('Savings targets loaded:', savingsTargets.length);
     } catch (error) {
         console.error('Error loading savings targets:', error);
         savingsTargets = [];
     }
 }
 
-// ===== LOCK ICON FUNCTIONS =====
-function setupLockIcon() {
-    const lockIcon = document.getElementById('budgetLockIcon');
+// ===== EDIT ICON FUNCTIONS =====
+function setupEditIcon() {
+    const editIcon = document.getElementById('budgetEditIcon');
     const budgetRemaining = document.getElementById('budgetRemaining');
     const budgetSeparator = document.getElementById('budgetSeparator');
     const budgetTotal = document.getElementById('budgetTotal');
     
-    if (!lockIcon || !budgetRemaining || !budgetTotal) return;
+    if (!editIcon || !budgetRemaining || !budgetTotal || !budgetSeparator) {
+        console.error('Required elements not found for edit icon');
+        return;
+    }
     
-    lockIcon.setAttribute('data-locked', 'true');
-    lockIcon.classList.add('locked');
+    editIcon.className = 'fa-solid fa-pen-to-square edit-icon';
+    editIcon.setAttribute('data-editing', 'false');
     
-    lockIcon.addEventListener('click', function() {
-        if (this.classList.contains('locked')) {
-            this.classList.remove('fa-lock', 'locked');
-            this.classList.add('fa-unlock', 'unlocked');
-            this.setAttribute('data-locked', 'false');
+    const newEditIcon = editIcon.cloneNode(true);
+    editIcon.parentNode.replaceChild(newEditIcon, editIcon);
+    
+    newEditIcon.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (this.getAttribute('data-editing') === 'false') {
+            this.classList.remove('fa-pen-to-square');
+            this.classList.add('fa-square-check', 'editing');
+            this.setAttribute('data-editing', 'true');
             
             budgetRemaining.style.display = 'none';
             budgetSeparator.style.display = 'none';
-            budgetTotal.classList.add('editable');
-            budgetTotal.addEventListener('click', editBudget);
+            
+            // Create container with total and pen icon
+            const container = document.createElement('div');
+            container.className = 'editable-amount-container';
+            container.setAttribute('data-budget', 'true');
+            container.innerHTML = `
+                <span class="card-total">${MONTHLY_BUDGET.toFixed(2)}</span>
+                <i class="fa-solid fa-pen edit-amount-icon"></i>
+            `;
+            
+            // Replace the budgetTotal content
+            budgetTotal.innerHTML = '';
+            budgetTotal.appendChild(container);
+            budgetTotal.style.display = 'inline';
+            
+            // Add click handler to the container
+            container.addEventListener('click', (e) => {
+                e.stopPropagation();
+                editBudget();
+            });
+            
         } else {
-            this.classList.remove('fa-unlock', 'unlocked');
-            this.classList.add('fa-lock', 'locked');
-            this.setAttribute('data-locked', 'true');
+            this.classList.remove('fa-square-check', 'editing');
+            this.classList.add('fa-pen-to-square');
+            this.setAttribute('data-editing', 'false');
             
             budgetRemaining.style.display = 'inline';
             budgetSeparator.style.display = 'inline';
+            
+            // Restore original budget total
+            budgetTotal.innerHTML = MONTHLY_BUDGET.toFixed(2);
             budgetTotal.classList.remove('editable');
-            budgetTotal.removeEventListener('click', editBudget);
+            budgetTotal.style.cursor = 'default';
+            budgetTotal.style.fontSize = '';
+            budgetTotal.style.fontWeight = '';
         }
     });
 }
@@ -811,30 +851,39 @@ function setupLockIcon() {
 // ===== EDIT BUDGET =====
 async function editBudget() {
     const budgetTotal = document.getElementById('budgetTotal');
-    const lockIcon = document.getElementById('budgetLockIcon');
+    const editIcon = document.getElementById('budgetEditIcon');
     const budgetRemaining = document.getElementById('budgetRemaining');
     const budgetSeparator = document.getElementById('budgetSeparator');
     
-    if (!lockIcon || lockIcon.getAttribute('data-locked') === 'true') return;
+    if (!editIcon || editIcon.getAttribute('data-editing') !== 'true') {
+        return;
+    }
     
     const currentValue = MONTHLY_BUDGET;
     
+    // Clear the container and show input
+    budgetTotal.innerHTML = '';
+    
     const input = document.createElement('input');
-    input.type = 'text';
+    input.type = 'number';
     input.value = currentValue;
-    input.inputMode = 'decimal';
+    input.step = 'any';
+    input.min = '0';
     input.className = 'budget-input';
     input.style.width = '120px';
+    input.style.fontSize = '15px';
+    input.style.fontWeight = '700';
+    input.style.textAlign = 'center';
     
-    budgetTotal.style.display = 'none';
-    budgetTotal.parentNode.appendChild(input);
+    budgetTotal.appendChild(input);
+    budgetTotal.style.display = 'inline';
     input.focus();
     input.select();
     
     async function finishEditing() {
         const newValue = parseFloat(input.value);
         
-        if (!isNaN(newValue) && newValue >= 0) {
+        if (!isNaN(newValue) && newValue >= 0 && newValue !== currentValue) {
             const { data: { session } } = await supabase.auth.getSession();
             
             if (!session) {
@@ -853,25 +902,43 @@ async function editBudget() {
                 MONTHLY_BUDGET = newValue;
                 updateDashboard();
                 
-                budgetTotal.textContent = newValue.toFixed(0);
-                budgetTotal.style.display = 'inline';
+                // Recreate the container with pen icon
+                const container = document.createElement('div');
+                container.className = 'editable-amount-container';
+                container.setAttribute('data-budget', 'true');
+                container.innerHTML = `
+                    <span class="card-total">${newValue.toFixed(2)}</span>
+                    <i class="fa-solid fa-pen edit-amount-icon"></i>
+                `;
+                budgetTotal.innerHTML = '';
+                budgetTotal.appendChild(container);
                 
-                const monthExpenses = expenses.filter(expense => {
-                    const expenseDate = new Date(expense.date);
-                    return expenseDate.getMonth() === currentMonth && 
-                           expenseDate.getFullYear() === currentYear;
+                container.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    editBudget();
                 });
-                const totalSpent = monthExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
-                const budgetLeft = MONTHLY_BUDGET - totalSpent;
-                budgetRemaining.textContent = Math.max(budgetLeft, 0).toFixed(0);
                 
             } catch (error) {
+                console.error('Error updating budget:', error);
                 alert('Failed to update budget');
             }
+        } else {
+            // Restore the container with pen icon
+            const container = document.createElement('div');
+            container.className = 'editable-amount-container';
+            container.setAttribute('data-budget', 'true');
+            container.innerHTML = `
+                <span class="card-total">${currentValue.toFixed(2)}</span>
+                <i class="fa-solid fa-pen edit-amount-icon"></i>
+            `;
+            budgetTotal.innerHTML = '';
+            budgetTotal.appendChild(container);
+            
+            container.addEventListener('click', (e) => {
+                e.stopPropagation();
+                editBudget();
+            });
         }
-        
-        input.remove();
-        budgetTotal.style.display = 'inline';
     }
     
     input.addEventListener('keypress', (e) => {
@@ -882,83 +949,152 @@ async function editBudget() {
     });
     
     input.addEventListener('blur', finishEditing);
+    
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            
+            // Restore the container with pen icon
+            const container = document.createElement('div');
+            container.className = 'editable-amount-container';
+            container.setAttribute('data-budget', 'true');
+            container.innerHTML = `
+                <span class="card-total">${currentValue.toFixed(2)}</span>
+                <i class="fa-solid fa-pen edit-amount-icon"></i>
+            `;
+            budgetTotal.innerHTML = '';
+            budgetTotal.appendChild(container);
+            
+            container.addEventListener('click', (e) => {
+                e.stopPropagation();
+                editBudget();
+            });
+        }
+    });
 }
 
-// ===== BUDGET CARD LOCK ICON SETUP =====
-function setupBudgetCardLocks() {
-    const lockIcons = document.querySelectorAll('.lock-icon[data-category]');
+// ===== BUDGET CARD EDIT ICON SETUP =====
+function setupBudgetCardEdits() {
+    const editIcons = document.querySelectorAll('.edit-icon[data-category]');
     
-    lockIcons.forEach(lockIcon => {
-        const newLockIcon = lockIcon.cloneNode(true);
-        lockIcon.parentNode.replaceChild(newLockIcon, lockIcon);
+    editIcons.forEach(editIcon => {
+        editIcon.className = 'fa-solid fa-pen-to-square edit-icon';
+        editIcon.setAttribute('data-editing', 'false');
         
-        newLockIcon.addEventListener('click', function(e) {
+        const newEditIcon = editIcon.cloneNode(true);
+        editIcon.parentNode.replaceChild(newEditIcon, editIcon);
+        
+        newEditIcon.addEventListener('click', function(e) {
             e.stopPropagation();
-            toggleBudgetCardLock(this);
+            toggleBudgetCardEdit(this);
         });
     });
 }
 
-// ===== TOGGLE BUDGET CARD LOCK =====
-function toggleBudgetCardLock(lockIcon) {
-    const category = lockIcon.dataset.category;
+// ===== TOGGLE BUDGET CARD EDIT MODE =====
+function toggleBudgetCardEdit(editIcon) {
+    const category = editIcon.dataset.category;
     const amountEl = document.getElementById(`${category.toLowerCase()}Amount`);
     
     if (!amountEl) return;
     
-    if (lockIcon.classList.contains('locked')) {
-        lockIcon.className = 'fa-solid fa-unlock lock-icon unlocked';
-        lockIcon.setAttribute('data-locked', 'false');
+    if (editIcon.getAttribute('data-editing') === 'false') {
+        editIcon.classList.remove('fa-pen-to-square');
+        editIcon.classList.add('fa-square-check', 'editing');
+        editIcon.setAttribute('data-editing', 'true');
         
         amountEl.setAttribute('data-original-html', amountEl.innerHTML);
         
-        const match = amountEl.innerHTML.match(/(\d+)/);
-        if (match) {
-            amountEl.innerHTML = `<span class="card-total">${match[1]}</span>`;
+        const totalMatch = amountEl.innerHTML.match(/<span class="card-total"[^>]*>([\d.]+)<\/span>/);
+        if (totalMatch) {
+            // Create container with total and pen icon - entire container is clickable
+            const container = document.createElement('div');
+            container.className = 'editable-amount-container';
+            container.setAttribute('data-category', category);
+            container.innerHTML = `
+                <span class="card-total">${totalMatch[1]}</span>
+                <i class="fa-solid fa-pen edit-amount-icon"></i>
+            `;
+            amountEl.innerHTML = '';
+            amountEl.appendChild(container);
+            
+            // Add click handler to the entire container (number click works)
+            container.addEventListener('click', (e) => {
+                e.stopPropagation();
+                editBudgetCardAmount(category);
+            });
         }
         
-        const handler = () => editBudgetCardAmount(category);
-        amountEl._clickHandler = handler;
-        amountEl.addEventListener('click', handler);
-    } else {
-        lockIcon.className = 'fa-solid fa-lock lock-icon locked';
-        lockIcon.setAttribute('data-locked', 'true');
-        
-        const original = amountEl.getAttribute('data-original-html');
-        if (original) amountEl.innerHTML = original;
-        
+        // Remove the old click handler
         if (amountEl._clickHandler) {
             amountEl.removeEventListener('click', amountEl._clickHandler);
             delete amountEl._clickHandler;
         }
+        
+    } else {
+        editIcon.classList.remove('fa-square-check', 'editing');
+        editIcon.classList.add('fa-pen-to-square');
+        editIcon.setAttribute('data-editing', 'false');
+        
+        const categorySpending = calculateCategorySpending();
+        const spent = categorySpending[category] || 0;
+        
+        let totalBudget = 0;
+        const storedTotal = amountEl.getAttribute('data-total-budget');
+        
+        if (storedTotal) {
+            totalBudget = parseFloat(storedTotal);
+        } else {
+            const totalMatch = amountEl.textContent.match(/(\d+(?:\.\d+)?)/);
+            if (totalMatch) {
+                totalBudget = parseFloat(totalMatch[1]);
+            }
+        }
+        
+        const remaining = Math.max(totalBudget - spent, 0);
+        
+        amountEl.setAttribute('data-total-budget', totalBudget);
+        
+        amountEl.innerHTML = `<span class="card-amount">${remaining.toFixed(2)}</span><span class="card-separator">/</span><span class="card-total">${totalBudget.toFixed(2)}</span>`;
     }
 }
 
 // ===== EDIT BUDGET CARD AMOUNT =====
 async function editBudgetCardAmount(category) {
     const amountEl = document.getElementById(`${category.toLowerCase()}Amount`);
-    const lockIcon = document.querySelector(`.lock-icon[data-category="${category}"]`);
+    const editIcon = document.querySelector(`.edit-icon[data-category="${category}"]`);
     
-    if (!lockIcon || lockIcon.getAttribute('data-locked') === 'true') {
+    if (!editIcon || editIcon.getAttribute('data-editing') === 'false') {
         return;
     }
     
     let currentTotalAllocation = 0;
-    const amountText = amountEl.textContent || amountEl.innerText;
-    const match = amountText.match(/(\d+(?:\.\d+)?)/);
-    if (match) {
-        currentTotalAllocation = parseFloat(match[1]);
+    
+    if (amountEl.hasAttribute('data-total-budget')) {
+        currentTotalAllocation = parseFloat(amountEl.getAttribute('data-total-budget'));
+    } else {
+        const amountText = amountEl.textContent || amountEl.innerText;
+        const match = amountText.match(/(\d+(?:\.\d+)?)/);
+        if (match) {
+            currentTotalAllocation = parseFloat(match[1]);
+        }
     }
+    
+    // Clear the container and show input
+    amountEl.innerHTML = '';
     
     const input = document.createElement('input');
     input.type = 'number';
-    input.value = currentTotalAllocation;
+    input.value = currentTotalAllocation.toFixed(2);
     input.step = 'any';
     input.min = '0';
     input.className = 'budget-amount-input';
+    input.style.width = '100px';
+    input.style.fontSize = '15px';
+    input.style.fontWeight = '400';
+    input.style.textAlign = 'center';
     
-    amountEl.style.display = 'none';
-    amountEl.parentNode.appendChild(input);
+    amountEl.appendChild(input);
     input.focus();
     input.select();
     
@@ -973,14 +1109,59 @@ async function editBudgetCardAmount(category) {
             
             if (!isNaN(newTotalAllocation) && newTotalAllocation >= 0 && newTotalAllocation !== currentTotalAllocation) {
                 await saveCategoryAmount(category, newTotalAllocation);
+                
+                amountEl.setAttribute('data-total-budget', newTotalAllocation);
+                
+                if (editIcon && editIcon.getAttribute('data-editing') === 'true') {
+                    // Recreate the container with pen icon - entire container clickable
+                    const container = document.createElement('div');
+                    container.className = 'editable-amount-container';
+                    container.setAttribute('data-category', category);
+                    container.innerHTML = `
+                        <span class="card-total">${newTotalAllocation.toFixed(2)}</span>
+                        <i class="fa-solid fa-pen edit-amount-icon"></i>
+                    `;
+                    amountEl.innerHTML = '';
+                    amountEl.appendChild(container);
+                    
+                    container.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        editBudgetCardAmount(category);
+                    });
+                }
+            } else {
+                // Restore the container with pen icon
+                const container = document.createElement('div');
+                container.className = 'editable-amount-container';
+                container.setAttribute('data-category', category);
+                container.innerHTML = `
+                    <span class="card-total">${currentTotalAllocation.toFixed(2)}</span>
+                    <i class="fa-solid fa-pen edit-amount-icon"></i>
+                `;
+                amountEl.innerHTML = '';
+                amountEl.appendChild(container);
+                
+                container.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    editBudgetCardAmount(category);
+                });
             }
-        }
-        
-        input.remove();
-        amountEl.style.display = 'block';
-        
-        if (lockIcon && lockIcon.getAttribute('data-locked') === 'false') {
-            toggleBudgetCardLock(lockIcon);
+        } else {
+            // Restore the container with pen icon
+            const container = document.createElement('div');
+            container.className = 'editable-amount-container';
+            container.setAttribute('data-category', category);
+            container.innerHTML = `
+                <span class="card-total">${currentTotalAllocation.toFixed(2)}</span>
+                <i class="fa-solid fa-pen edit-amount-icon"></i>
+            `;
+            amountEl.innerHTML = '';
+            amountEl.appendChild(container);
+            
+            container.addEventListener('click', (e) => {
+                e.stopPropagation();
+                editBudgetCardAmount(category);
+            });
         }
     };
     
@@ -1037,6 +1218,32 @@ async function saveCategoryAmount(category, newAmount) {
         
         updateCategoryBudgets();
         
+        const editIcon = document.querySelector(`.edit-icon[data-category="${category}"]`);
+        if (editIcon && editIcon.getAttribute('data-editing') === 'true') {
+            setTimeout(() => {
+                const amountEl = document.getElementById(`${category.toLowerCase()}Amount`);
+                if (amountEl) {
+                    amountEl.setAttribute('data-total-budget', roundedAmount);
+                    
+                    // Recreate the container with pen icon - entire container clickable
+                    const container = document.createElement('div');
+                    container.className = 'editable-amount-container';
+                    container.setAttribute('data-category', category);
+                    container.innerHTML = `
+                        <span class="card-total">${roundedAmount.toFixed(2)}</span>
+                        <i class="fa-solid fa-pen edit-amount-icon"></i>
+                    `;
+                    amountEl.innerHTML = '';
+                    amountEl.appendChild(container);
+                    
+                    container.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        editBudgetCardAmount(category);
+                    });
+                }
+            }, 100);
+        }
+        
     } catch (error) {
         alert('Failed to save budget amount');
     }
@@ -1052,23 +1259,18 @@ async function addSavingsGoal(event) {
         return;
     }
     
-    const nameInput = document.getElementById('savingsName');
-    const targetAmountInput = document.getElementById('savingsTargetAmount');
+    const goalTypeSelect = document.getElementById('savingsGoalType');
     const categorySelect = document.getElementById('savingsCategory');
+    const targetAmountInput = document.getElementById('savingsTargetAmount');
     
-    if (!nameInput || !targetAmountInput || !categorySelect) return;
+    if (!goalTypeSelect || !categorySelect || !targetAmountInput) return;
     
-    const name = nameInput.value;
-    const targetAmount = parseFloat(targetAmountInput.value);
+    const goalType = goalTypeSelect.value;
     const category = categorySelect.value;
+    const targetAmount = parseFloat(targetAmountInput.value);
     
-    if (!name) {
-        alert('Please enter a goal name');
-        return;
-    }
-    
-    if (isNaN(targetAmount) || targetAmount <= 0) {
-        alert('Please enter a valid target amount');
+    if (!goalType) {
+        alert('Please select a goal type');
         return;
     }
     
@@ -1077,12 +1279,19 @@ async function addSavingsGoal(event) {
         return;
     }
     
+    if (isNaN(targetAmount) || targetAmount <= 0) {
+        alert('Please enter a valid target amount');
+        return;
+    }
+    
+    const goalName = `Spend no more than ${targetAmount} on ${category}`;
+    
     const newGoal = {
         user_id: session.user.id,
-        name: name,
+        name: goalName,
         target_amount: targetAmount,
         current_amount: 0,
-        target_type: 'Savings Goal',
+        target_type: 'spend_limit',
         source_category: category,
         created_at: new Date().toISOString()
     };
@@ -1097,20 +1306,212 @@ async function addSavingsGoal(event) {
         
         savingsTargets.push({
             id: data[0].id,
-            name: name,
+            name: goalName,
             target: targetAmount,
             saved: 0,
             source: category
         });
         
-        document.getElementById('savingsForm').reset();
-        
-        closeAddTransactionModal();
-        
         updateSavingsTargetsList();
+        
+        document.getElementById('savingsForm').reset();
+        closeAddTransactionModal();
         
     } catch (error) {
         alert('Failed to add savings goal: ' + error.message);
+    }
+}
+
+// ===== GOAL -> SPEND NO MORE THAN =====
+function calculateSpendNoMoreThanProgress() {
+    const monthExpenses = expenses.filter(expense => {
+        const expenseDate = new Date(expense.date);
+        return expenseDate.getMonth() === currentMonth && 
+               expenseDate.getFullYear() === currentYear;
+    });
+
+    // Calculate total spent per category
+    const categorySpending = {};
+    monthExpenses.forEach(expense => {
+        if (!categorySpending[expense.category]) {
+            categorySpending[expense.category] = 0;
+        }
+        categorySpending[expense.category] += parseFloat(expense.amount) || 0;
+    });
+
+    // Update each spend no more than goal with its current spending
+    savingsTargets = savingsTargets.map(goal => {
+        if (goal.name && goal.name.startsWith('Spend no more than')) {
+            const spent = categorySpending[goal.source] || 0;
+            return {
+                ...goal,
+                saved: spent
+            };
+        }
+        return goal;
+    });
+}
+
+// ===== CALCULATE SAVINGS FROM SPEND NO MORE THAN GOALS =====
+function calculateSavingsFromGoals() {
+    let totalSavings = 0;
+    const categorySpending = calculateCategorySpending();
+    
+    // Get current budget allocations
+    const monthlyBudget = MONTHLY_BUDGET;
+    const billsBudget = (categoryPercentages.Bills / 100) * monthlyBudget;
+    const remainingBudget = monthlyBudget - billsBudget;
+    
+    const foodPercentage = 35;
+    const transportPercentage = 20;
+    const shoppingPercentage = 20;
+    const entertainmentPercentage = 15;
+    const otherPercentage = 10;
+    
+    const otherCategoriesTotal = foodPercentage + transportPercentage + shoppingPercentage + entertainmentPercentage + otherPercentage;
+    
+    // Calculate base budgets
+    let baseBudgets = {};
+    
+    if (window.customBudgetAmounts && Object.keys(window.customBudgetAmounts).length > 0) {
+        baseBudgets = {
+            'Food': window.customBudgetAmounts['Food'] || (foodPercentage / otherCategoriesTotal) * remainingBudget,
+            'Transport': window.customBudgetAmounts['Transport'] || (transportPercentage / otherCategoriesTotal) * remainingBudget,
+            'Shopping': window.customBudgetAmounts['Shopping'] || (shoppingPercentage / otherCategoriesTotal) * remainingBudget,
+            'Entertainment': window.customBudgetAmounts['Entertainment'] || (entertainmentPercentage / otherCategoriesTotal) * remainingBudget,
+            'Bills': billsBudget,
+            'Other': window.customBudgetAmounts['Other'] || (otherPercentage / otherCategoriesTotal) * remainingBudget
+        };
+    } else {
+        baseBudgets = {
+            'Food': (foodPercentage / otherCategoriesTotal) * remainingBudget,
+            'Transport': (transportPercentage / otherCategoriesTotal) * remainingBudget,
+            'Shopping': (shoppingPercentage / otherCategoriesTotal) * remainingBudget,
+            'Entertainment': (entertainmentPercentage / otherCategoriesTotal) * remainingBudget,
+            'Bills': billsBudget,
+            'Other': (otherPercentage / otherCategoriesTotal) * remainingBudget
+        };
+    }
+    
+    // Calculate savings from each spend no more than goal
+    savingsTargets.forEach(goal => {
+        if (goal.name && goal.name.startsWith('Spend no more than')) {
+            const category = goal.source;
+            const budgetAllocation = baseBudgets[category] || 0;
+            const spendLimit = goal.target;
+            const actualSpent = categorySpending[category] || 0;
+            
+            // Base savings: budget allocation minus spend limit
+            const baseSavings = Math.max(budgetAllocation - spendLimit, 0);
+            
+            // Additional savings: spend limit minus actual spent
+            const additionalSavings = Math.max(spendLimit - actualSpent, 0);
+            
+            // Total savings from this goal
+            const goalSavings = baseSavings + additionalSavings;
+            totalSavings += goalSavings;
+        }
+    });
+    
+    return totalSavings;
+}
+
+// ===== SAVINGS DATABASE FUNCTIONS =====
+async function loadSavingsFromDatabase(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('savings')
+            .select('amount')
+            .eq('user_id', userId)
+            .eq('month', currentMonth)
+            .eq('year', currentYear)
+            .single();
+        
+        if (error && error.code !== 'PGRST116') throw error;
+        
+        if (data) {
+            return data.amount;
+        } else {
+            return 0;
+        }
+    } catch (error) {
+        console.error('Error loading savings from database:', error);
+        return 0;
+    }
+}
+
+async function saveSavingsToDatabase(userId, totalSavings) {
+    try {
+        const savingsData = {
+            user_id: userId,
+            month: currentMonth,
+            year: currentYear,
+            amount: totalSavings,
+            updated_at: new Date().toISOString()
+        };
+        
+        const { error } = await supabase
+            .from('savings')
+            .upsert(savingsData, {
+                onConflict: 'user_id, month, year'
+            });
+        
+        if (error) throw error;
+        
+        return true;
+    } catch (error) {
+        console.error('Error saving savings to database:', error);
+        return false;
+    }
+}
+
+async function getSavingsFromDatabase() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        return 0;
+    }
+    
+    const dbSavings = await loadSavingsFromDatabase(session.user.id);
+    return dbSavings;
+}
+
+async function calculateAndSaveSavings() {
+    // Step 1: Calculate savings
+    const totalSavings = calculateSavingsFromGoals();
+    
+    if (totalSavings === undefined || totalSavings === null) {
+        return 0;
+    }
+    
+    // Step 2: Get user session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+        return totalSavings;
+    }
+    
+    // Step 3: Prepare data for database
+    const savingsData = {
+        user_id: session.user.id,
+        month: currentMonth,
+        year: currentYear,
+        amount: totalSavings,
+        updated_at: new Date().toISOString()
+    };
+    
+    // Step 4: Save to database
+    try {
+        const { error } = await supabase
+            .from('savings')
+            .upsert(savingsData, {
+                onConflict: 'user_id, month, year'
+            });
+        
+        if (error) throw error;
+        
+        return totalSavings;
+    } catch (error) {
+        console.error('Failed to save savings:', error);
+        return totalSavings;
     }
 }
 
@@ -1342,8 +1743,6 @@ async function addIncome(event) {
 
 // ===== DELETE EXPENSE =====
 async function deleteExpense(id) {
-    if (!confirm('Delete this expense?')) return;
-    
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
         window.location.href = '/login/login.html';
@@ -1370,8 +1769,6 @@ window.deleteExpense = deleteExpense;
 
 // ===== DELETE INCOME =====
 async function deleteIncome(id) {
-    if (!confirm('Delete this income?')) return;
-    
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
         window.location.href = '/login/login.html';
@@ -1440,8 +1837,6 @@ function setupLogoutButton() {
 
 // ===== TAB NAVIGATION =====
 function setupTabNavigation() {
-    console.log('Setting up tab navigation');
-    
     const homeBtn = document.getElementById('homeTabBtn');
     const budgetsBtn = document.getElementById('budgetsTabBtn');
     const addBtn = document.getElementById('addTabBtn');
@@ -1453,16 +1848,12 @@ function setupTabNavigation() {
     const savingsTab = document.getElementById('savingsTab');
     const listTab = document.getElementById('listTab');
     
-    console.log('Add button found:', addBtn ? 'YES' : 'NO');
-    
     if (!homeBtn || !budgetsBtn || !addBtn || !savingsBtn || !listBtn) {
         console.error('Navigation buttons not found');
         return;
     }
     
     function switchTab(tabId, activeButton) {
-        console.log('Switching to tab:', tabId);
-        
         if (homeTab) homeTab.classList.remove('active-tab');
         if (budgetsTab) budgetsTab.classList.remove('active-tab');
         if (savingsTab) savingsTab.classList.remove('active-tab');
@@ -1519,7 +1910,6 @@ function setupTabNavigation() {
     newAddBtn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        console.log('✅ Add button clicked - opening modal');
         openAddTransactionModal();
     });
     
@@ -1532,8 +1922,6 @@ function setupTabNavigation() {
         e.preventDefault();
         switchTab('listTab', newListBtn);
     });
-    
-    console.log('Tab navigation setup complete');
 }
 
 // ===== MODAL FUNCTIONS =====
@@ -1555,7 +1943,6 @@ function openAddTransactionModal() {
     if (expenseDate) expenseDate.value = today;
     if (incomeDate) incomeDate.value = today;
     
-    // Always start with expense form
     showExpenseForm();
 }
 
@@ -1584,7 +1971,6 @@ function showExpenseForm() {
     
     if (expenseToggle) {
         expenseToggle.classList.add('active');
-        // Force inline style removal to let CSS take over
         expenseToggle.style.color = '';
         const text = expenseToggle.querySelector('.toggle-text');
         if (text) text.style.color = '';
@@ -1671,14 +2057,11 @@ function showSavingsForm() {
 
 // ===== MODAL TOGGLE SETUP =====
 function setupModalToggle() {
-    console.log('Setting up modal toggle');
-    
     const expenseToggle = document.getElementById('expenseToggleBtn');
     const incomeToggle = document.getElementById('incomeToggleBtn');
     const savingsToggle = document.getElementById('savingsToggleBtn');
     const cancelBtn = document.getElementById('cancelAddTransaction');
     
-    // Remove any existing listeners and add fresh ones
     if (expenseToggle) {
         const newExpenseToggle = expenseToggle.cloneNode(true);
         if (expenseToggle.parentNode) {
@@ -1688,10 +2071,8 @@ function setupModalToggle() {
         newExpenseToggle.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Expense toggle clicked');
             showExpenseForm();
         });
-        console.log('Expense toggle setup complete');
     }
     
     if (incomeToggle) {
@@ -1703,10 +2084,8 @@ function setupModalToggle() {
         newIncomeToggle.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Income toggle clicked');
             showIncomeForm();
         });
-        console.log('Income toggle setup complete');
     }
     
     if (savingsToggle) {
@@ -1718,13 +2097,10 @@ function setupModalToggle() {
         newSavingsToggle.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Savings toggle clicked');
             showSavingsForm();
         });
-        console.log('Savings toggle setup complete');
     }
     
-    // Setup cancel button
     if (cancelBtn) {
         const newCancelBtn = cancelBtn.cloneNode(true);
         if (cancelBtn.parentNode) {
@@ -1734,16 +2110,13 @@ function setupModalToggle() {
         newCancelBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Cancel button clicked');
             closeAddTransactionModal();
         });
-        console.log('Cancel button setup complete');
     }
 }
 
 // ===== INITIALIZE APP =====
 async function initializeApp(user) {
-    console.log('Initializing app for user:', user.id);
     try {
         await loadBudget(user.id);
         await loadExpenses(user.id);
@@ -1754,20 +2127,25 @@ async function initializeApp(user) {
         
         setMonthFromLatestExpense();
         updateMonthDisplay();
-        updateDashboard();
+        
+        // Load savings from database first
+        const dbSavings = await getSavingsFromDatabase();
+        const savingsAmountEl = document.getElementById('savingsAmount');
+        if (savingsAmountEl) {
+            savingsAmountEl.textContent = dbSavings.toFixed(2);
+        }
+        
+        await updateDashboard();
         
         setupEventListeners();
         setupTabNavigation();
-        setupLockIcon();
-        setupBudgetCardLocks();
+        setupEditIcon();
+        setupBudgetCardEdits();
         
-        // Setup modal toggles (this now includes cancel button)
         setupModalToggle();
         
-        // Setup modal overlay click
         const modal = document.getElementById('addTransactionModal');
         if (modal) {
-            // Don't clone the modal as it contains the toggles we just set up
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     closeAddTransactionModal();
@@ -1777,7 +2155,6 @@ async function initializeApp(user) {
         
         setupLogoutButton();
         
-        console.log('App initialization complete');
     } catch (error) {
         console.error('Error initializing app:', error);
     }

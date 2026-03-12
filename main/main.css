@@ -59,7 +59,7 @@ body {
     min-width: 0;
 }
 
-/* ===== UNIVERSAL CARD STYLES (SINGLE SOURCE OF TRUTH) ===== */
+/* ===== UNIVERSAL CARD STYLES ===== */
 .card {
     background: #282d31;
     border-radius: 12px;
@@ -163,7 +163,7 @@ body {
     transition: width 0.3s ease;
 }
 
-/* Color variants - ONLY these differ per card type */
+/* Color variants */
 .budget-primary .card-amount { color: #9d4edd; }
 .spent-primary .card-amount { color: #f56565; }
 .savings-primary .card-amount { color: #edb458; }
@@ -184,6 +184,95 @@ body {
     color: #a0aec0;
     font-family: 'Satoshi', sans-serif;
     margin-top: 5px;
+}
+
+/* ===== EDITABLE AMOUNT WITH PEN ICON ===== */
+.editable-amount-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.editable-amount-container .card-total {
+    font-size: 24px;
+    font-weight: 700;
+    color: #a0aec0;
+    cursor: pointer;
+}
+
+.editable-amount-container .edit-amount-icon {
+    font-size: 14px;
+    color: #a0aec0;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    pointer-events: none;
+}
+
+.editable-amount-container:hover .edit-amount-icon {
+    opacity: 1;
+    color: #9d4edd;
+}
+
+.editable-amount-container:hover .card-total {
+    color: #cbd5e0;
+}
+
+/* ===== EDIT ICONS ===== */
+.edit-icon {
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #0466c8;
+}
+
+.edit-icon.editing {
+    color: #48bb78;
+}
+
+.edit-icon:hover {
+    color: #4361ee;
+    transform: scale(1.2);
+}
+
+.edit-icon.editing:hover {
+    color: #68d391;
+}
+
+.card-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.delete-icon {
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #c53030;
+    opacity: 0.7;
+}
+
+.delete-icon:hover {
+    color: #f56565;
+    transform: scale(1.2);
+    opacity: 1;
+}
+
+/* ===== SAVINGS CARD =====*/
+/* Home tab savings card */
+#savingsAmount {
+    font-size: 36px;
+    padding-top: 12px;
+    padding-bottom: 48px;
+}
+
+/* Budgets tab savings card */
+#savingsAllocationAmount {
+    font-size: 28px;
+    padding-top: 8px;
+    padding-bottom: 37px;
 }
 
 /* ===== MONTH SELECTOR CARD ===== */
@@ -256,7 +345,6 @@ body {
     width: 100%;
 }
 
-/* Savings goal specific styles */
 .savings-goal-name {
     font-family: 'Supreme', sans-serif;
     font-weight: 900;
@@ -285,45 +373,13 @@ body {
     font-size: 10px;
 }
 
-/* ===== LOCK ICONS ===== */
-.card-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+/* ===== SAVINGS GOAL STATUS BORDERS ===== */
+.within-budget {
+    border: 2px solid #48bb78;
 }
 
-.lock-icon {
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: #0466c8;
-}
-
-.lock-icon.unlocked {
-    color: #c53030;
-}
-
-.lock-icon:hover {
-    color: #4361ee;
-    transform: scale(1.2);
-}
-
-.lock-icon.unlocked:hover {
-    color: #ff5153;
-}
-
-.delete-icon {
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: #c53030;
-    opacity: 0.7;
-}
-
-.delete-icon:hover {
-    color: #f56565;
-    transform: scale(1.2);
-    opacity: 1;
+.over-budget {
+    border: 2px solid #f56565;
 }
 
 /* ===== TOP NAVIGATION ===== */
@@ -450,7 +506,7 @@ body {
     font-family: 'Satoshi', sans-serif;
 }
 
-/* ===== INPUT STYLES - Consolidated ===== */
+/* ===== INPUT STYLES ===== */
 .budget-input,
 .budget-amount-input,
 .savings-amount-input {
