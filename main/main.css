@@ -332,11 +332,6 @@ body {
     width: 100%;
 }
 
-/* Hide percentage for bills if needed */
-[data-category="Bills"] .card-percentage {
-    display: none;
-}
-
 /* ===== SAVINGS TAB LAYOUT ===== */
 .savings-grid {
     display: grid;
