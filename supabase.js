@@ -1,9 +1,10 @@
 // public/supabase.js
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
-// Replace these with your actual values
-const supabaseUrl = 'https://yusppfdhsmvxfilnmlzj.supabase.co'  // ← Paste your URL here (with https://)
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1c3BwZmRoc212eGZpbG5tbHpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNDMxMDAsImV4cCI6MjA4NzkxOTEwMH0.qoY5Mx7e0QLtsDcYpSYUSC3lF0oLXohV_Na2ZZA4e0E' // ← Paste your anon public key here
+// ✅ Correct URL (no /rest/v1/ at the end)
+const supabaseUrl = 'https://jjdkqrgfdiqgqpcjslwm.supabase.co'  
+// ✅ Correct Anon Key (copy-paste what you just sent)
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqZGtxcmdmZGlxZ3FwY2pzbHdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3OTMxMjYsImV4cCI6MjA5ODM2OTEyNn0.LEKw5utWg6krgI4PPDihd5GGZ6ldIO8GZGIcJjEn89A'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
